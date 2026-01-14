@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<queries>
+   <query name="org.infocare.sync.schools" coreTable="SCHOOLS" flattened="false">
+        <columns><column column="ID">ID</column><column column="SCHOOL_NUMBER">SCHOOL_NUMBER</column><column column="NAME">NAME</column><column column="ABBREVIATION">ABBREVIATION</column><column column="DCID">DCID</column></columns>
+        <sql><![CDATA[ SELECT ID, SCHOOL_NUMBER, NAME, ABBREVIATION, DCID FROM SCHOOLS ]]></sql>
+    </query>
+
+    <query name="org.infocare.sync.terms" coreTable="TERMS" flattened="false">
+        <args><arg name="schoolid" type="primitive" required="true"/></args>
+        <columns><column column="ID">ID</column><column column="SCHOOLID">SCHOOLID</column><column column="NAME">NAME</column><column column="ABBREVIATION">ABBREVIATION</column><column column="FIRSTDAY">FIRSTDAY</column><column column="LASTDAY">LASTDAY</column><column column="YEARID">YEARID</column><column column="ISYEARREC">ISYEARREC</column><column column="DCID">DCID</column></columns>
+        <sql><![CDATA[ SELECT ID, SCHOOLID, NAME, ABBREVIATION, FIRSTDAY, LASTDAY, YEARID, ISYEARREC, DCID FROM TERMS WHERE SCHOOLID = :schoolid ]]></sql>
+    </query>
+
+    <query name="org.infocare.sync.teachers" coreTable="TEACHERS" flattened="false">
+        <columns><column column="ID">ID</column><column column="DCID">DCID</column><column column="LASTFIRST">LASTFIRST</column><column column="FIRST_NAME">FIRST_NAME</column><column column="LAST_NAME">LAST_NAME</column><column column="EMAIL_ADDR">EMAIL_ADDR</column><column column="SCHOOLID">SCHOOLID</column><column column="STAFFSTATUS">STAFFSTATUS</column></columns>
+        <sql><![CDATA[ SELECT ID, DCID, LASTFIRST, FIRST_NAME, LAST_NAME, EMAIL_ADDR, SCHOOLID, STAFFSTATUS FROM TEACHERS ]]></sql>
+    </query>
+
+    <query name="org.infocare.sync.students" coreTable="STUDENTS" flattened="false">
+        <columns><column column="ID">ID</column><column column="DCID">DCID</column><column column="STUDENT_NUMBER">STUDENT_NUMBER</column><column column="FIRST_NAME">FIRST_NAME</column><column column="LAST_NAME">LAST_NAME</column><column column="MIDDLE_NAME">MIDDLE_NAME</column><column column="GENDER">GENDER</column><column column="GRADE_LEVEL">GRADE_LEVEL</column><column column="SCHOOLID">SCHOOLID</column><column column="HOME_ROOM">HOME_ROOM</column><column column="ENROLL_STATUS">ENROLL_STATUS</column><column column="ENTRYDATE">ENTRYDATE</column><column column="EXITDATE">EXITDATE</column><column column="DOB">DOB</column><column column="FAMILY_IDENT">FAMILY_IDENT</column><column column="STREET">STREET</column><column column="CITY">CITY</column><column column="HOME_PHONE">HOME_PHONE</column><column column="GUARDIANEMAIL">GUARDIANEMAIL</column></columns>
+        <sql><![CDATA[ SELECT ID, DCID, STUDENT_NUMBER, FIRST_NAME, LAST_NAME, MIDDLE_NAME, GENDER, GRADE_LEVEL, SCHOOLID, HOME_ROOM, ENROLL_STATUS, ENTRYDATE, EXITDATE, DOB, FAMILY_IDENT, STREET, CITY, HOME_PHONE, GUARDIANEMAIL FROM STUDENTS ]]></sql>
+    </query>
+
+    <query name="org.infocare.sync.courses" coreTable="COURSES" flattened="false">
+        <columns><column column="ID">ID</column><column column="COURSE_NUMBER">COURSE_NUMBER</column><column column="COURSE_NAME">COURSE_NAME</column><column column="CREDIT_HOURS">CREDIT_HOURS</column><column column="DCID">DCID</column></columns>
+        <sql><![CDATA[ SELECT ID, COURSE_NUMBER, COURSE_NAME, CREDIT_HOURS, DCID FROM COURSES ]]></sql>
+    </query>
+
+    <query name="org.infocare.sync.sections" coreTable="SECTIONS" flattened="false">
+        <args><arg name="schoolid" type="primitive" required="true"/></args>
+        <columns><column column="ID">ID</column><column column="DCID">DCID</column><column column="COURSE_NUMBER">COURSE_NUMBER</column><column column="SECTION_NUMBER">SECTION_NUMBER</column><column column="TEACHER">TEACHER</column><column column="TERMID">TERMID</column><column column="SCHOOLID">SCHOOLID</column><column column="EXPRESSION">EXPRESSION</column></columns>
+        <sql><![CDATA[ SELECT ID, DCID, COURSE_NUMBER, SECTION_NUMBER, TEACHER, TERMID, SCHOOLID, EXPRESSION FROM SECTIONS WHERE SCHOOLID = :schoolid ]]></sql>
+    </query>
+
+    <query name="org.infocare.sync.cc" coreTable="CC" flattened="false">
+        <args><arg name="schoolid" type="primitive" required="true"/></args>
+        <columns><column column="ID">ID</column><column column="DCID">DCID</column><column column="STUDENTID">STUDENTID</column><column column="COURSE_NUMBER">COURSE_NUMBER</column><column column="SECTIONID">SECTIONID</column><column column="TERMID">TERMID</column><column column="SCHOOLID">SCHOOLID</column><column column="DATEENROLLED">DATEENROLLED</column><column column="DATELEFT">DATELEFT</column></columns>
+        <sql><![CDATA[ SELECT ID, DCID, STUDENTID, COURSE_NUMBER, SECTIONID, TERMID, SCHOOLID, DATEENROLLED, DATELEFT FROM CC WHERE SCHOOLID = :schoolid ]]></sql>
+    </query>
+
+    <query name="org.infocare.sync.standards" coreTable="STANDARDS" flattened="false">
+        <columns><column column="ID">ID</column><column column="DCID">DCID</column><column column="IDENTIFIER">IDENTIFIER</column><column column="NAME">NAME</column><column column="DESCRIPTION">DESCRIPTION</column><column column="SUBJECTAREA">SUBJECTAREA</column></columns>
+        <sql><![CDATA[ SELECT ID, DCID, IDENTIFIER, NAME, DESCRIPTION, SUBJECTAREA FROM STANDARDS ]]></sql>
+    </query>
+
+    <query name="org.infocare.sync.storedgrades" coreTable="STOREDGRADES" flattened="false">
+        <args><arg name="schoolid" type="primitive" required="true"/></args>
+        <columns><column column="DCID">DCID</column><column column="STUDENTID">STUDENTID</column><column column="SCHOOLID">SCHOOLID</column><column column="TERMID">TERMID</column><column column="COURSE_NUMBER">COURSE_NUMBER</column><column column="SECTIONID">SECTIONID</column><column column="GRADE">GRADE</column><column column="PERCENT">PERCENT</column><column column="GPA_POINTS">GPA_POINTS</column><column column="STORECODE">STORECODE</column></columns>
+        <sql><![CDATA[ SELECT DCID, STUDENTID, SCHOOLID, TERMID, COURSE_NUMBER, SECTIONID, GRADE, PERCENT, GPA_POINTS, STORECODE FROM STOREDGRADES WHERE SCHOOLID = :schoolid ]]></sql>
+    </query>
+
+    <query name="org.infocare.sync.attendance" coreTable="ATTENDANCE" flattened="false">
+        <args><arg name="schoolid" type="primitive" required="true"/></args>
+        <columns><column column="ID">ID</column><column column="DCID">DCID</column><column column="STUDENTID">STUDENTID</column><column column="ATT_DATE">ATT_DATE</column><column column="ATTENDANCE_CODEID">ATTENDANCE_CODEID</column><column column="PERIODID">PERIODID</column><column column="SCHOOLID">SCHOOLID</column><column column="YearID">YearID</column><column column="ATT_MODE_CODE">ATT_MODE_CODE</column></columns>
+        <sql><![CDATA[ SELECT ID, DCID, STUDENTID, ATT_DATE, ATTENDANCE_CODEID, PERIODID, SCHOOLID, YearID, ATT_MODE_CODE FROM ATTENDANCE WHERE SCHOOLID = :schoolid ]]></sql>
+    </query>
+
+    <query name="org.infocare.sync.attendance_code" coreTable="ATTENDANCE_CODE" flattened="false">
+        <columns><column column="ID">ID</column><column column="DCID">DCID</column><column column="SCHOOLID">SCHOOLID</column><column column="YEARID">YEARID</column><column column="ATT_CODE">ATT_CODE</column><column column="DESCRIPTION">DESCRIPTION</column><column column="PRESENCE_STATUS_CD">PRESENCE_STATUS_CD</column></columns>
+        <sql><![CDATA[ SELECT ID, DCID, SCHOOLID, YEARID, ATT_CODE, DESCRIPTION, PRESENCE_STATUS_CD FROM ATTENDANCE_CODE ]]></sql>
+    </query>
+
+    <query name="org.infocare.sync.person" coreTable="PERSON" flattened="false">
+        <columns><column column="ID">ID</column><column column="DCID">DCID</column><column column="FIRSTNAME">FIRSTNAME</column><column column="LASTNAME">LASTNAME</column><column column="MIDDLENAME">MIDDLENAME</column><column column="ISACTIVE">ISACTIVE</column></columns>
+        <sql><![CDATA[ SELECT ID, DCID, FIRSTNAME, LASTNAME, MIDDLENAME, ISACTIVE FROM PERSON ]]></sql>
+    </query>
+
+    <query name="org.infocare.sync.student_contact_assoc" coreTable="STUDENTCONTACTASSOC" flattened="false">
+        <columns><column column="STUDENTCONTACTASSOCID">STUDENTCONTACTASSOCID</column><column column="STUDENTDCID">STUDENTDCID</column><column column="PERSONID">PERSONID</column><column column="CONTACTPRIORITYORDER">CONTACTPRIORITYORDER</column><column column="CURRRELTYPECODESETID">CURRRELTYPECODESETID</column></columns>
+        <sql><![CDATA[ SELECT STUDENTCONTACTASSOCID, STUDENTDCID, PERSONID, CONTACTPRIORITYORDER, CURRRELTYPECODESETID FROM STUDENTCONTACTASSOC ]]></sql>
+    </query>
+
+    <query name="org.infocare.sync.emailaddress" coreTable="EMAILADDRESS" flattened="false">
+        <columns><column column="EMAILADDRESSID">EMAILADDRESSID</column><column column="EMAILADDRESS">EMAILADDRESS</column></columns>
+        <sql><![CDATA[ SELECT EMAILADDRESSID, EMAILADDRESS FROM EMAILADDRESS ]]></sql>
+    </query>
+
+    <query name="org.infocare.sync.person_email_assoc" coreTable="PERSONEMAILADDRESSASSOC" flattened="false">
+        <columns><column column="PERSONEMAILADDRESSASSOCID">PERSONEMAILADDRESSASSOCID</column><column column="PERSONID">PERSONID</column><column column="EMAILADDRESSID">EMAILADDRESSID</column><column column="ISPRIMARYEMAILADDRESS">ISPRIMARYEMAILADDRESS</column></columns>
+        <sql><![CDATA[ SELECT PERSONEMAILADDRESSASSOCID, PERSONID, EMAILADDRESSID, ISPRIMARYEMAILADDRESS FROM PERSONEMAILADDRESSASSOC ]]></sql>
+    </query>
+
+    <query name="org.infocare.sync.phonenumber" coreTable="PHONENUMBER" flattened="false">
+        <columns><column column="PHONENUMBERID">PHONENUMBERID</column><column column="PHONENUMBER">PHONENUMBER</column></columns>
+        <sql><![CDATA[ SELECT PHONENUMBERID, PHONENUMBER FROM PHONENUMBER ]]></sql>
+    </query>
+
+    <query name="org.infocare.sync.person_phone_assoc" coreTable="PERSONPHONENUMBERASSOC" flattened="false">
+        <columns><column column="PERSONPHONENUMBERASSOCID">PERSONPHONENUMBERASSOCID</column><column column="PERSONID">PERSONID</column><column column="PHONENUMBERID">PHONENUMBERID</column><column column="ISPREFERRED">ISPREFERRED</column></columns>
+        <sql><![CDATA[ SELECT PERSONPHONENUMBERASSOCID, PERSONID, PHONENUMBERID, ISPREFERRED FROM PERSONPHONENUMBERASSOC ]]></sql>
+    </query>
+
+    <query name="org.infocare.sync.student_standards_report" coreTable="STUDENTS" flattened="false">
+        <description>Get student standards-based grades for reporting using verified SQL</description>
+        <args>
+            <arg name="sdcid" type="primitive" required="true" />
+            <arg name="yearid" type="primitive" required="true" />
+        </args>
+        <columns>
+            <column column="STUDENT_NUMBER">studentNumber</column>
+            <column column="FIRST_NAME">firstName</column>
+            <column column="LAST_NAME">lastName</column>
+            <column column="LAST_NAME">courseName</column>
+            <column column="STUDENT_NUMBER">sectionNumber</column>
+            <column column="LAST_NAME">standardCode</column>
+            <column column="LAST_NAME">standardName</column>
+            <column column="LAST_NAME">grade</column>
+            <column column="LAST_NAME">storeCode</column>
+            <column column="STUDENT_NUMBER">yearId</column>
+            <column column="STUDENT_NUMBER">sortOrder</column>
+        </columns>
+        <sql>
+            <![CDATA[
+            SELECT 
+                s.STUDENT_NUMBER,
+                s.FIRST_NAME,
+                s.LAST_NAME,
+                c.COURSE_NAME,
+                sec.SECTION_NUMBER,
+                st.IDENTIFIER AS STANDARD_CODE,
+                st.NAME AS STANDARD_NAME,
+                sgs.STANDARDGRADE,
+                sgs.STORECODE,
+                sgs.YEARID,
+                st.STANDARDID
+            FROM STANDARDGRADESECTION sgs
+            JOIN STUDENTS s ON sgs.STUDENTSDCID = s.DCID
+            JOIN SECTIONS sec ON sgs.SECTIONSDCID = sec.DCID
+            JOIN COURSES c ON sec.COURSE_NUMBER = c.COURSE_NUMBER
+            JOIN STANDARD st ON sgs.STANDARDID = st.STANDARDID
+            WHERE s.DCID = :sdcid
+              AND s.ENROLL_STATUS = 0
+              AND sgs.STORECODE LIKE 'Q%'
+              AND sgs.YEARID = :yearid
+            ORDER BY 
+                sgs.YEARID DESC, 
+                c.COURSE_NAME ASC, 
+                sgs.STORECODE ASC, 
+                st.STANDARDID ASC
+            ]]>
+        </sql>
+    </query>
+    
+    <query name="org.infocare.sync.student_attendance_stats" coreTable="STUDENTS" flattened="false">
+        <description>Get quarterly attendance statistics (Absent and Tardy) for students</description>
+        <args>
+            <arg name="yearid" type="primitive" required="true" />  
+            <arg name="sdcid" type="primitive" required="true" />
+        </args>
+        <columns>
+            <column column="STUDENT_NUMBER">studentNumber</column>
+            <column column="FIRST_NAME">firstName</column>
+            <column column="LAST_NAME">lastName</column>
+            <column column="STUDENT_NUMBER">absentQ1</column>
+            <column column="STUDENT_NUMBER">absentQ2</column>
+            <column column="STUDENT_NUMBER">absentQ3</column>
+            <column column="STUDENT_NUMBER">absentQ4</column>
+            <column column="STUDENT_NUMBER">tardyQ1</column>
+            <column column="STUDENT_NUMBER">tardyQ2</column>
+            <column column="STUDENT_NUMBER">tardyQ3</column>
+            <column column="STUDENT_NUMBER">tardyQ4</column>
+        </columns>
+        <sql>
+            <![CDATA[
+            SELECT 
+                stu.STUDENT_NUMBER,
+                stu.FIRST_NAME,
+                stu.LAST_NAME,
+                -- 统计 Absent (缺勤)
+                COUNT(CASE WHEN ac.ATT_CODE = 'A' AND t.ABBREVIATION LIKE '%Q1%' THEN 1 END) AS ABSENT_Q1,
+                COUNT(CASE WHEN ac.ATT_CODE = 'A' AND t.ABBREVIATION LIKE '%Q2%' THEN 1 END) AS ABSENT_Q2,
+                COUNT(CASE WHEN ac.ATT_CODE = 'A' AND t.ABBREVIATION LIKE '%Q3%' THEN 1 END) AS ABSENT_Q3,
+                COUNT(CASE WHEN ac.ATT_CODE = 'A' AND t.ABBREVIATION LIKE '%Q4%' THEN 1 END) AS ABSENT_Q4,
+                -- 统计 Tardy (迟到)
+                COUNT(CASE WHEN ac.ATT_CODE = 'T' AND t.ABBREVIATION LIKE '%Q1%' THEN 1 END) AS TARDY_Q1,
+                COUNT(CASE WHEN ac.ATT_CODE = 'T' AND t.ABBREVIATION LIKE '%Q2%' THEN 1 END) AS TARDY_Q2,
+                COUNT(CASE WHEN ac.ATT_CODE = 'T' AND t.ABBREVIATION LIKE '%Q3%' THEN 1 END) AS TARDY_Q3,
+                COUNT(CASE WHEN ac.ATT_CODE = 'T' AND t.ABBREVIATION LIKE '%Q4%' THEN 1 END) AS TARDY_Q4
+            FROM STUDENTS stu
+            JOIN ATTENDANCE att ON stu.ID = att.STUDENTID
+            JOIN ATTENDANCE_CODE ac ON att.ATTENDANCE_CODEID = ac.ID
+            JOIN TERMS t ON att.SCHOOLID = t.SCHOOLID 
+                AND att.ATT_DATE >= t.FIRSTDAY 
+                AND att.ATT_DATE <= t.LASTDAY
+            WHERE att.YearID = :yearid
+            and stu.dcid = :sdcid
+              AND t.ISYEARREC = 0
+              AND ac.ATT_CODE IN ('A', 'T')
+            GROUP BY stu.STUDENT_NUMBER, stu.FIRST_NAME, stu.LAST_NAME
+            ]]>
+        </sql>
+    </query>
+
+</queries>

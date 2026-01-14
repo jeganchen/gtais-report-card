@@ -1,36 +1,259 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PS Report Card
 
-## Getting Started
+**GTIIT Affiliated International School** - 汕头市广东以色列理工学院附属外籍人员子女学校
 
-First, run the development server:
+学生报告卡管理系统 - 用于生成和管理学生学年报告卡。
+
+## 功能特性
+
+- 🔐 **认证系统**：支持用户名/密码登录和 Office 365 SSO
+- 📋 **学生列表**：查看当前学期所有学生，支持搜索和筛选
+- 📄 **报告预览**：预览学生完整报告卡，包含考勤和学科评价
+- 📑 **PDF生成**：一键生成PDF格式的报告卡
+- 📧 **批量发送**：选择多个学生，批量发送报告卡到家长邮箱
+- 🔄 **PowerSchool同步**：实时从PowerSchool获取学生、成绩和考勤数据
+- 💾 **数据库存储**：使用MySQL持久化存储数据
+
+## 技术栈
+
+- **框架**: Next.js 15 (App Router)
+- **语言**: TypeScript 5
+- **样式**: Tailwind CSS 4
+- **认证**: NextAuth.js v5
+- **状态管理**: Zustand
+- **数据库**: MySQL + Prisma ORM
+- **PDF生成**: @react-pdf/renderer
+- **邮件服务**: Resend
+- **HTTP客户端**: Axios
+
+## 快速开始
+
+### 1. 安装依赖
+
+```bash
+npm install
+```
+
+### 2. 数据库配置
+
+确保MySQL服务运行中，然后创建数据库：
+
+```sql
+CREATE DATABASE grais_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+
+### 3. 环境配置
+
+创建 `.env.local` 文件：
+
+```env
+# 数据库配置
+DATABASE_URL="mysql://root:Rainbow@123@localhost:3306/grais_db"
+
+# 启用数据库模式（设为false则使用Mock数据）
+USE_DATABASE="true"
+
+# NextAuth 配置
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=your-secret-key-generate-with-openssl
+
+# Azure AD (Office 365 登录) - 可选
+AZURE_AD_CLIENT_ID=your-client-id
+AZURE_AD_CLIENT_SECRET=your-client-secret
+AZURE_AD_TENANT_ID=your-tenant-id
+
+# PowerSchool API - 可在Settings页面配置
+POWERSCHOOL_ENDPOINT=https://your-powerschool.com
+POWERSCHOOL_CLIENT_ID=your-client-id
+POWERSCHOOL_CLIENT_SECRET=your-client-secret
+POWERSCHOOL_SCHOOL_ID=your-school-id
+
+# 邮件服务 - 可在Settings页面配置
+RESEND_API_KEY=your-resend-api-key
+EMAIL_FROM=noreply@gtiit-school.edu.cn
+```
+
+### 4. 初始化数据库
+
+```bash
+# 生成Prisma客户端
+npm run db:generate
+
+# 推送数据库Schema
+npm run db:push
+
+# 或者使用脚本一键设置
+chmod +x scripts/setup-db.sh
+./scripts/setup-db.sh
+```
+
+### 5. 启动开发服务器
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+访问 [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 数据库命令
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+# 生成Prisma客户端
+npm run db:generate
 
-## Learn More
+# 推送Schema到数据库（开发）
+npm run db:push
 
-To learn more about Next.js, take a look at the following resources:
+# 创建迁移（开发）
+npm run db:migrate
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# 部署迁移（生产）
+npm run db:migrate:prod
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# 打开数据库管理界面
+npm run db:studio
+```
 
-## Deploy on Vercel
+## 测试账号
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+开发环境下可使用以下测试账号：
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| 角色 | 邮箱 | 密码 |
+|------|------|------|
+| Admin | admin@school.edu | admin123 |
+| Teacher | teacher@school.edu | teacher123 |
+
+## 项目结构
+
+```
+ps-report-card/
+├── app/                      # Next.js App Router
+│   ├── (auth)/              # 认证相关页面
+│   │   └── login/           # 登录页
+│   ├── (dashboard)/         # 主应用页面
+│   │   ├── students/        # 学生列表
+│   │   ├── report/[id]/     # 报告预览
+│   │   └── settings/        # 系统设置
+│   └── api/                 # API 路由
+│       ├── students/        # 学生API
+│       ├── sync/            # 同步API
+│       ├── settings/        # 设置API
+│       └── powerschool/     # PowerSchool API
+├── components/              # React 组件
+│   ├── ui/                  # 基础 UI 组件
+│   ├── auth/                # 认证组件
+│   ├── students/            # 学生相关组件
+│   ├── report/              # 报告相关组件
+│   ├── settings/            # 设置组件
+│   └── layout/              # 布局组件
+├── lib/                     # 工具库
+│   ├── auth.ts              # NextAuth 配置
+│   ├── database/            # 数据库层
+│   │   ├── client.ts        # Prisma客户端
+│   │   └── repositories/    # 数据仓库
+│   ├── powerschool/         # PowerSchool对接层
+│   │   ├── client.ts        # HTTP客户端
+│   │   ├── token-manager.ts # Token管理
+│   │   ├── types.ts         # 类型定义
+│   │   ├── transformer.ts   # 数据转换
+│   │   └── api/             # API封装
+│   └── services/            # 业务服务层
+│       ├── student.service.ts
+│       └── sync.service.ts
+├── prisma/
+│   └── schema.prisma        # 数据库模型
+├── types/                   # TypeScript 类型定义
+├── mocks/                   # Mock 数据
+├── stores/                  # Zustand 状态管理
+├── plugin/                  # PowerSchool Plugin配置
+│   ├── plugin.xml
+│   └── queries_root/
+└── public/
+    └── GTAIS.png            # 学校Logo
+```
+
+## PowerSchool对接架构
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      前端 (Next.js Pages)                    │
+├─────────────────────────────────────────────────────────────┤
+│                      API Routes Layer                        │
+│  /api/students  /api/sync  /api/attendance  /api/grades     │
+├─────────────────────────────────────────────────────────────┤
+│                    Service Layer                             │
+│  StudentService  GradeService  AttendanceService  SyncService│
+├─────────────────────────────────────────────────────────────┤
+│                 Repository Layer (Prisma)                    │
+│  StudentRepo  GradeRepo  AttendanceRepo  SettingsRepo       │
+├─────────────────────────────────────────────────────────────┤
+│                    MySQL Database                            │
+│                     (grais_db)                               │
+└─────────────────────────────────────────────────────────────┘
+                           ↕ 实时同步
+┌─────────────────────────────────────────────────────────────┐
+│               PowerSchool Client Layer                       │
+│  TokenManager  StudentAPI  GradeAPI  AttendanceAPI          │
+└─────────────────────────────────────────────────────────────┘
+                           ↕
+┌─────────────────────────────────────────────────────────────┐
+│                 PowerSchool Server                           │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## API端点
+
+| 路由 | 方法 | 描述 |
+|------|------|------|
+| `/api/students` | GET | 获取学生列表 |
+| `/api/students/[id]` | GET | 获取学生详情 |
+| `/api/students/[id]/grades` | GET | 获取学生成绩 |
+| `/api/students/[id]/attendance` | GET | 获取学生考勤 |
+| `/api/students/[id]/report` | GET | 获取完整报告数据 |
+| `/api/sync` | GET | 获取同步状态 |
+| `/api/sync` | POST | 触发数据同步 |
+| `/api/settings` | GET/PUT | 系统设置 |
+| `/api/powerschool/token` | POST | 获取PS Token |
+
+## 报告卡内容
+
+报告卡包含以下内容：
+
+1. **页眉**：学校 Logo 和名称 (GTIIT Affiliated International School)
+2. **学生信息**：学号、姓名、年级、班级、日期
+3. **考勤汇总**：按季度(Q1-Q4)统计缺勤和迟到
+4. **评分说明 (Assessment Key)**：
+   - E = Exemplary (优秀)
+   - P = Proficient (熟练)
+   - A = Approaching (接近)
+   - N = Not Yet (尚未)
+   - \- = 未评估
+5. **学科评价**：每个学科的 Standards 和季度评分
+6. **页脚**：校长签名、学校联系信息
+
+## 主题色
+
+应用使用 GTIIT 学校品牌紫色主题：
+
+- 主色: `#6b2d5b`
+- 浅色: `#f5eaf3`
+- 深色: `#2d1226`
+
+## 开发进度
+
+- [x] 项目基础架构
+- [x] 认证系统
+- [x] 学生列表页面
+- [x] 报告预览页面
+- [x] 系统设置页面
+- [x] PowerSchool对接层
+- [x] MySQL数据库集成
+- [x] 数据同步服务
+- [ ] 真实PDF生成
+- [ ] 邮件服务集成
+- [ ] 角色权限管理 (RBAC)
+- [ ] 多学年支持
+
+## License
+
+Private - GTIIT Affiliated International School

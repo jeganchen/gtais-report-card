@@ -1,0 +1,545 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// 系统配置表
+// ============================================================
+
+// 系统设置 - 存储各种配置信息
+model Settings {
+  id                String    @id @default("main")
+  
+  // PowerSchool 配置
+  psEndpoint        String?   @map("ps_endpoint") @db.VarChar(500)
+  psClientId        String?   @map("ps_client_id") @db.VarChar(255)
+  psClientSecret    String?   @map("ps_client_secret") @db.VarChar(255)
+  psAccessToken     String?   @map("ps_access_token") @db.Text
+  psTokenExpiresAt  DateTime? @map("ps_token_expires_at")
+  psSchoolId        Int?      @map("ps_school_id")
+  
+  // Azure AD 配置
+  azureClientId     String?   @map("azure_client_id") @db.VarChar(255)
+  azureClientSecret String?   @map("azure_client_secret") @db.VarChar(255)
+  azureTenantId     String?   @map("azure_tenant_id") @db.VarChar(255)
+  azureEnabled      Boolean   @default(false) @map("azure_enabled")
+  
+  // SMTP 邮件配置
+  smtpHost          String?   @map("smtp_host") @db.VarChar(255)
+  smtpPort          Int?      @map("smtp_port")
+  smtpSecure        Boolean   @default(false) @map("smtp_secure")
+  smtpUsername      String?   @map("smtp_username") @db.VarChar(255)
+  smtpPassword      String?   @map("smtp_password") @db.VarChar(255)
+  smtpFromEmail     String?   @map("smtp_from_email") @db.VarChar(255)
+  smtpFromName      String?   @map("smtp_from_name") @db.VarChar(255)
+  smtpEnabled       Boolean   @default(false) @map("smtp_enabled")
+  
+  // 签名配置
+  signatureImage    String?   @map("signature_image") @db.LongText
+  principalName     String?   @map("principal_name") @db.VarChar(255)
+  principalTitle    String?   @map("principal_title") @db.VarChar(255)
+  
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  @@map("settings")
+}
+
+// 系统用户
+model User {
+  email         String    @id @db.VarChar(255)
+  name          String?   @db.VarChar(200)
+  role          String    @default("teacher") @db.VarChar(50) // admin, teacher
+  provider      String    @default("credentials") @db.VarChar(50) // credentials, azure-ad
+  password      String?   @db.VarChar(255)
+  isActive      Boolean   @default(true) @map("is_active")
+  lastLoginAt   DateTime? @map("last_login_at")
+  
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@index([role])
+  @@index([isActive])
+  @@map("users")
+}
+
+// 同步日志
+model SyncLog {
+  id          String    @id @default(cuid())
+  type        String    @db.VarChar(50) // schools, terms, students, courses, grades, attendance, contacts, full
+  status      String    @db.VarChar(20) // pending, running, completed, failed
+  recordCount Int       @default(0) @map("record_count")
+  errorMsg    String?   @map("error_msg") @db.Text
+  details     String?   @db.LongText // JSON格式的详细信息
+  
+  startedAt   DateTime  @default(now()) @map("started_at")
+  completedAt DateTime? @map("completed_at")
+
+  @@index([type])
+  @@index([status])
+  @@index([startedAt])
+  @@map("sync_logs")
+}
+
+// ============================================================
+// PowerSchool 基础信息表
+// ============================================================
+
+// 学校信息 (SCHOOLS)
+model School {
+  id            String    @id @default(cuid())
+  psId          Int       @unique @map("ps_id")           // PowerSchool ID
+  psDcid        Int?      @map("ps_dcid")                 // PowerSchool DCID
+  schoolNumber  String?   @map("school_number") @db.VarChar(50)
+  name          String    @db.VarChar(255)
+  abbreviation  String?   @db.VarChar(50)
+  
+  // 关联
+  terms         Term[]
+  teachers      Teacher[]
+  sections      Section[]
+  
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@index([schoolNumber])
+  @@map("schools")
+}
+
+// 学年与学期 (TERMS)
+model Term {
+  id            String    @id @default(cuid())
+  psId          Int       @unique @map("ps_id")           // PowerSchool ID
+  psDcid        Int?      @map("ps_dcid")                 // PowerSchool DCID
+  name          String    @db.VarChar(100)
+  abbreviation  String?   @db.VarChar(50)
+  firstDay      DateTime  @map("first_day")
+  lastDay       DateTime  @map("last_day")
+  yearId        Int       @map("year_id")                 // PowerSchool YearID
+  isYearRec     Boolean   @default(false) @map("is_year_rec")  // 是否为学年记录
+  isCurrent     Boolean   @default(false) @map("is_current")
+  
+  // 关联
+  schoolId      String    @map("school_id")
+  school        School    @relation(fields: [schoolId], references: [id])
+  
+  sections      Section[]
+  enrollments   StudentEnrollment[]
+  storedGrades  StoredGrade[]
+  attendances   Attendance[]
+  
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@index([schoolId])
+  @@index([yearId])
+  @@index([isCurrent])
+  @@map("terms")
+}
+
+// 教师/员工信息 (TEACHERS)
+model Teacher {
+  id            String    @id @default(cuid())
+  psId          Int       @unique @map("ps_id")           // PowerSchool ID
+  psDcid        Int?      @map("ps_dcid")                 // PowerSchool DCID
+  firstName     String    @map("first_name") @db.VarChar(100)
+  lastName      String    @map("last_name") @db.VarChar(100)
+  lastFirst     String?   @map("last_first") @db.VarChar(200) // 姓名格式: LastName, FirstName
+  email         String?   @db.VarChar(255)
+  staffStatus   Int?      @map("staff_status")            // 员工状态
+  isActive      Boolean   @default(true) @map("is_active")
+  
+  // 关联
+  schoolId      String    @map("school_id")
+  school        School    @relation(fields: [schoolId], references: [id])
+  
+  sections      Section[]
+  
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@index([schoolId])
+  @@index([email])
+  @@map("teachers")
+}
+
+// ============================================================
+// 学生表
+// ============================================================
+
+// 学生主表 (STUDENTS)
+model Student {
+  id              String    @id @default(cuid())
+  psId            Int       @unique @map("ps_id")           // PowerSchool ID
+  psDcid          Int?      @map("ps_dcid")                 // PowerSchool DCID
+  studentNumber   String    @unique @map("student_number") @db.VarChar(50)
+  firstName       String    @map("first_name") @db.VarChar(100)
+  lastName        String    @map("last_name") @db.VarChar(100)
+  middleName      String?   @map("middle_name") @db.VarChar(100)
+  chineseName     String?   @map("chinese_name") @db.VarChar(100)
+  gender          String?   @db.VarChar(10)
+  gradeLevel      Int       @map("grade_level")
+  homeRoom        String?   @map("home_room") @db.VarChar(50)
+  enrollStatus    Int?      @map("enroll_status")           // 入学状态
+  entryDate       DateTime? @map("entry_date")
+  exitDate        DateTime? @map("exit_date")
+  dob             DateTime? @map("dob")                     // 出生日期
+  familyIdent     Int?      @map("family_ident")            // 家庭标识
+  street          String?   @db.VarChar(255)
+  city            String?   @db.VarChar(100)
+  homePhone       String?   @map("home_phone") @db.VarChar(50)
+  guardianEmail   String?   @map("guardian_email") @db.VarChar(255)
+  
+  // 关联 - schoolId 存储 PowerSchool 的 school ID (ps_id)，与 schools.ps_id 关联
+  schoolId        Int       @map("ps_school_id")
+  
+  // PDF生成状态
+  pdfGenerated    Boolean   @default(false) @map("pdf_generated")
+  pdfGeneratedAt  DateTime? @map("pdf_generated_at")
+  pdfUrl          String?   @map("pdf_url") @db.VarChar(500)
+  
+  // 关联关系
+  enrollments     StudentEnrollment[]
+  storedGrades    StoredGrade[]
+  attendances     Attendance[]
+  contacts        StudentContactAssoc[]
+  
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@index([schoolId])
+  @@index([gradeLevel])
+  @@index([enrollStatus])
+  @@map("students")
+}
+
+// ============================================================
+// 课程表
+// ============================================================
+
+// 课程定义 (COURSES)
+model Course {
+  id            String    @id @default(cuid())
+  psId          Int       @unique @map("ps_id")           // PowerSchool ID
+  psDcid        Int?      @map("ps_dcid")                 // PowerSchool DCID
+  courseNumber  String    @map("course_number") @db.VarChar(50)
+  courseName    String    @map("course_name") @db.VarChar(255)
+  creditHours   Decimal?  @map("credit_hours") @db.Decimal(5, 2)
+  isActive      Boolean   @default(true) @map("is_active")
+  
+  // 关联
+  sections      Section[]
+  standards     Standard[]
+  
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@index([courseNumber])
+  @@map("courses")
+}
+
+// 课节/班级 (SECTIONS)
+model Section {
+  id              String    @id @default(cuid())
+  psId            Int       @unique @map("ps_id")           // PowerSchool ID
+  psDcid          Int?      @map("ps_dcid")                 // PowerSchool DCID
+  courseNumber    String    @map("course_number") @db.VarChar(50)
+  sectionNumber   String    @map("section_number") @db.VarChar(50)
+  expression      String?   @db.VarChar(255)                // 课程表达式
+  
+  // 关联
+  schoolId        String    @map("school_id")
+  school          School    @relation(fields: [schoolId], references: [id])
+  
+  termId          String    @map("term_id")
+  term            Term      @relation(fields: [termId], references: [id])
+  
+  teacherId       String?   @map("teacher_id")
+  teacher         Teacher?  @relation(fields: [teacherId], references: [id])
+  
+  courseId        String?   @map("course_id")
+  course          Course?   @relation(fields: [courseId], references: [id])
+  
+  enrollments     StudentEnrollment[]
+  storedGrades    StoredGrade[]
+  attendances     Attendance[]
+  
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@index([schoolId])
+  @@index([termId])
+  @@index([teacherId])
+  @@index([courseNumber])
+  @@map("sections")
+}
+
+// 学生选课记录 (CC)
+model StudentEnrollment {
+  id            String    @id @default(cuid())
+  psId          Int       @unique @map("ps_id")           // PowerSchool ID
+  psDcid        Int?      @map("ps_dcid")                 // PowerSchool DCID
+  courseNumber  String    @map("course_number") @db.VarChar(50)
+  dateEnrolled  DateTime? @map("date_enrolled")
+  dateLeft      DateTime? @map("date_left")
+  
+  // 关联
+  studentId     String    @map("student_id")
+  student       Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
+  sectionId     String    @map("section_id")
+  section       Section   @relation(fields: [sectionId], references: [id])
+  
+  termId        String    @map("term_id")
+  term          Term      @relation(fields: [termId], references: [id])
+  
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@index([studentId])
+  @@index([sectionId])
+  @@index([termId])
+  @@map("student_enrollments")
+}
+
+// ============================================================
+// 成绩与考勤表
+// ============================================================
+
+// 学科标准定义 (STANDARDS)
+model Standard {
+  id            String    @id @default(cuid())
+  psId          Int       @unique @map("ps_id")           // PowerSchool ID
+  psDcid        Int?      @map("ps_dcid")                 // PowerSchool DCID
+  identifier    String    @db.VarChar(100)                // 标准代码
+  name          String    @db.VarChar(500)                // 标准名称
+  description   String?   @db.Text
+  subjectArea   String?   @map("subject_area") @db.VarChar(100)
+  listOrder     Int?      @map("list_order")
+  isActive      Boolean   @default(true) @map("is_active")
+  
+  // 关联到课程
+  courseId      String?   @map("course_id")
+  course        Course?   @relation(fields: [courseId], references: [id])
+  
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@index([identifier])
+  @@index([courseId])
+  @@map("standards")
+}
+
+// 期末成绩 (STOREDGRADES)
+model StoredGrade {
+  id            String    @id @default(cuid())
+  psId          Int       @unique @map("ps_id")           // PowerSchool ID
+  psDcid        Int?      @map("ps_dcid")                 // PowerSchool DCID
+  courseNumber  String    @map("course_number") @db.VarChar(50)
+  grade         String?   @db.VarChar(10)                 // 成绩等级 (E, P, A, N, -)
+  percent       Decimal?  @db.Decimal(5, 2)               // 百分比
+  gpaPoints     Decimal?  @map("gpa_points") @db.Decimal(5, 2)
+  storeCode     String?   @map("store_code") @db.VarChar(20) // 存储代码 (Q1, Q2, Q3, Q4, S1, S2, Y1)
+  comment       String?   @db.Text
+  
+  // 关联
+  studentId     String    @map("student_id")
+  student       Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
+  schoolId      String    @map("school_id")
+  
+  termId        String    @map("term_id")
+  term          Term      @relation(fields: [termId], references: [id])
+  
+  sectionId     String?   @map("section_id")
+  section       Section?  @relation(fields: [sectionId], references: [id])
+  
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@unique([studentId, termId, courseNumber, storeCode])
+  @@index([studentId])
+  @@index([termId])
+  @@index([sectionId])
+  @@map("stored_grades")
+}
+
+// 考勤代码字典 (ATTENDANCE_CODE)
+model AttendanceCode {
+  id              String    @id @default(cuid())
+  psId            Int       @unique @map("ps_id")           // PowerSchool ID
+  psDcid          Int?      @map("ps_dcid")                 // PowerSchool DCID
+  schoolId        Int       @map("ps_school_id")            // PowerSchool School ID
+  yearId          Int       @map("year_id")
+  attCode         String    @map("att_code") @db.VarChar(10)
+  description     String?   @db.VarChar(255)
+  presenceStatus  String?   @map("presence_status") @db.VarChar(10) // Present, Absent, Tardy
+  
+  attendances     Attendance[]
+  
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@index([schoolId, yearId])
+  @@index([attCode])
+  @@map("attendance_codes")
+}
+
+// 考勤明细 (ATTENDANCE)
+model Attendance {
+  id              String    @id @default(cuid())
+  psId            Int       @unique @map("ps_id")           // PowerSchool ID
+  psDcid          Int?      @map("ps_dcid")                 // PowerSchool DCID
+  attDate         DateTime  @map("att_date")
+  periodId        Int?      @map("period_id")
+  yearId          Int       @map("year_id")
+  attModeCode     String?   @map("att_mode_code") @db.VarChar(10)
+  
+  // 关联
+  studentId       String    @map("student_id")
+  student         Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
+  schoolId        Int       @map("ps_school_id")
+  
+  termId          String?   @map("term_id")
+  term            Term?     @relation(fields: [termId], references: [id])
+  
+  sectionId       String?   @map("section_id")
+  section         Section?  @relation(fields: [sectionId], references: [id])
+  
+  attendanceCodeId String?  @map("attendance_code_id")
+  attendanceCode  AttendanceCode? @relation(fields: [attendanceCodeId], references: [id])
+  
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@index([studentId])
+  @@index([attDate])
+  @@index([termId])
+  @@map("attendances")
+}
+
+// ============================================================
+// 联系人信息表
+// ============================================================
+
+// 个人基础信息 (PERSON)
+model Person {
+  id            String    @id @default(cuid())
+  psId          Int       @unique @map("ps_id")           // PowerSchool ID
+  psDcid        Int?      @map("ps_dcid")                 // PowerSchool DCID
+  firstName     String?   @map("first_name") @db.VarChar(100)
+  lastName      String?   @map("last_name") @db.VarChar(100)
+  middleName    String?   @map("middle_name") @db.VarChar(100)
+  isActive      Boolean   @default(true) @map("is_active")
+  
+  // 关联
+  studentContacts StudentContactAssoc[]
+  emails          PersonEmailAssoc[]
+  phones          PersonPhoneAssoc[]
+  
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@map("persons")
+}
+
+// 学生-联系人关联 (STUDENTCONTACTASSOC)
+model StudentContactAssoc {
+  id                  String    @id @default(cuid())
+  psId                Int       @unique @map("ps_id")       // PowerSchool STUDENTCONTACTASSOCID
+  contactPriorityOrder Int?     @map("contact_priority_order")
+  relationshipType    String?   @map("relationship_type") @db.VarChar(50) // 关系类型
+  
+  // 关联
+  studentId           String    @map("student_id")
+  student             Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
+  personId            String    @map("person_id")
+  person              Person    @relation(fields: [personId], references: [id], onDelete: Cascade)
+  
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  @@index([studentId])
+  @@index([personId])
+  @@map("student_contact_assocs")
+}
+
+// 电子邮箱 (EMAILADDRESS)
+model EmailAddress {
+  id              String    @id @default(cuid())
+  psId            Int       @unique @map("ps_id")           // PowerSchool EMAILADDRESSID
+  emailAddress    String    @map("email_address") @db.VarChar(255)
+  
+  personAssocs    PersonEmailAssoc[]
+  
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@index([emailAddress])
+  @@map("email_addresses")
+}
+
+// 个人-邮箱关联 (PERSONEMAILADDRESSASSOC)
+model PersonEmailAssoc {
+  id              String    @id @default(cuid())
+  psId            Int       @unique @map("ps_id")           // PowerSchool PERSONEMAILADDRESSASSOCID
+  isPrimary       Boolean   @default(false) @map("is_primary")
+  
+  personId        String    @map("person_id")
+  person          Person    @relation(fields: [personId], references: [id], onDelete: Cascade)
+  
+  emailId         String    @map("email_id")
+  email           EmailAddress @relation(fields: [emailId], references: [id], onDelete: Cascade)
+  
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@index([personId])
+  @@index([emailId])
+  @@map("person_email_assocs")
+}
+
+// 电话号码 (PHONENUMBER)
+model PhoneNumber {
+  id              String    @id @default(cuid())
+  psId            Int       @unique @map("ps_id")           // PowerSchool PHONENUMBERID
+  phoneNumber     String    @map("phone_number") @db.VarChar(50)
+  
+  personAssocs    PersonPhoneAssoc[]
+  
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@index([phoneNumber])
+  @@map("phone_numbers")
+}
+
+// 个人-电话关联 (PERSONPHONENUMBERASSOC)
+model PersonPhoneAssoc {
+  id              String    @id @default(cuid())
+  psId            Int       @unique @map("ps_id")           // PowerSchool PERSONPHONENUMBERASSOCID
+  isPreferred     Boolean   @default(false) @map("is_preferred")
+  
+  personId        String    @map("person_id")
+  person          Person    @relation(fields: [personId], references: [id], onDelete: Cascade)
+  
+  phoneId         String    @map("phone_id")
+  phone           PhoneNumber @relation(fields: [phoneId], references: [id], onDelete: Cascade)
+  
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@index([personId])
+  @@index([phoneId])
+  @@map("person_phone_assocs")
+}

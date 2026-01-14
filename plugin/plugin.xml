@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://plugin.powerschool.pearson.com"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        description="GTAIS Student Report Card System API"
+        name="GTAIS Report Card System Plugin"
+        version="1.0.4"
+        xsi:schemaLocation="http://plugin.powerschool.pearson.com plugin.xsd">
+    
+    <oauth>
+       
+    </oauth>
+
+    <access_request>
+        <!-- Terms Information -->
+       <field table="SCHOOLS" field="ID" access="ViewOnly" />
+        <field table="SCHOOLS" field="SCHOOL_NUMBER" access="ViewOnly" />
+        <field table="SCHOOLS" field="NAME" access="ViewOnly" />
+        <field table="SCHOOLS" field="ABBREVIATION" access="ViewOnly" />
+        <field table="SCHOOLS" field="DCID" access="ViewOnly" />
+        
+        <field table="TERMS" field="ID" access="ViewOnly" />
+        <field table="TERMS" field="SCHOOLID" access="ViewOnly" />
+        <field table="TERMS" field="NAME" access="ViewOnly" />
+        <field table="TERMS" field="ABBREVIATION" access="ViewOnly" />
+        <field table="TERMS" field="FIRSTDAY" access="ViewOnly" />
+        <field table="TERMS" field="LASTDAY" access="ViewOnly" />
+        <field table="TERMS" field="YEARID" access="ViewOnly" />
+        <field table="TERMS" field="ISYEARREC" access="ViewOnly" />
+        <field table="TERMS" field="DCID" access="ViewOnly" />
+
+        <field table="TEACHERS" field="ID" access="ViewOnly" />
+        <field table="TEACHERS" field="DCID" access="ViewOnly" />
+        <field table="TEACHERS" field="LASTFIRST" access="ViewOnly" />
+        <field table="TEACHERS" field="FIRST_NAME" access="ViewOnly" />
+        <field table="TEACHERS" field="LAST_NAME" access="ViewOnly" />
+        <field table="TEACHERS" field="EMAIL_ADDR" access="ViewOnly" />
+        <field table="TEACHERS" field="SCHOOLID" access="ViewOnly" />
+        <field table="TEACHERS" field="STAFFSTATUS" access="ViewOnly" />
+
+        <field table="STUDENTS" field="ID" access="ViewOnly" />
+        <field table="STUDENTS" field="DCID" access="ViewOnly" />
+        <field table="STUDENTS" field="STUDENT_NUMBER" access="ViewOnly" />
+        <field table="STUDENTS" field="FIRST_NAME" access="ViewOnly" />
+        <field table="STUDENTS" field="LAST_NAME" access="ViewOnly" />
+        <field table="STUDENTS" field="MIDDLE_NAME" access="ViewOnly" />
+        <field table="STUDENTS" field="GENDER" access="ViewOnly" />
+        <field table="STUDENTS" field="GRADE_LEVEL" access="ViewOnly" />
+        <field table="STUDENTS" field="SCHOOLID" access="ViewOnly" />
+        <field table="STUDENTS" field="HOME_ROOM" access="ViewOnly" />
+        <field table="STUDENTS" field="ENROLL_STATUS" access="ViewOnly" />
+        <field table="STUDENTS" field="ENTRYDATE" access="ViewOnly" />
+        <field table="STUDENTS" field="EXITDATE" access="ViewOnly" />
+        <field table="STUDENTS" field="DOB" access="ViewOnly" />
+        <field table="STUDENTS" field="FAMILY_IDENT" access="ViewOnly" />
+        <field table="STUDENTS" field="STREET" access="ViewOnly" />
+        <field table="STUDENTS" field="CITY" access="ViewOnly" />
+        <field table="STUDENTS" field="HOME_PHONE" access="ViewOnly" />
+        <field table="STUDENTS" field="GUARDIANEMAIL" access="ViewOnly" />
+
+        <field table="COURSES" field="ID" access="ViewOnly" />
+        <field table="COURSES" field="COURSE_NUMBER" access="ViewOnly" />
+        <field table="COURSES" field="COURSE_NAME" access="ViewOnly" />
+        <field table="COURSES" field="CREDIT_HOURS" access="ViewOnly" />
+        <field table="COURSES" field="DCID" access="ViewOnly" />
+
+        <field table="SECTIONS" field="ID" access="ViewOnly" />
+        <field table="SECTIONS" field="DCID" access="ViewOnly" />
+        <field table="SECTIONS" field="COURSE_NUMBER" access="ViewOnly" />
+        <field table="SECTIONS" field="SECTION_NUMBER" access="ViewOnly" />
+        <field table="SECTIONS" field="TEACHER" access="ViewOnly" />
+        <field table="SECTIONS" field="TERMID" access="ViewOnly" />
+        <field table="SECTIONS" field="SCHOOLID" access="ViewOnly" />
+        <field table="SECTIONS" field="EXPRESSION" access="ViewOnly" />
+
+        <field table="CC" field="ID" access="ViewOnly" />
+        <field table="CC" field="DCID" access="ViewOnly" />
+        <field table="CC" field="STUDENTID" access="ViewOnly" />
+        <field table="CC" field="COURSE_NUMBER" access="ViewOnly" />
+        <field table="CC" field="SECTIONID" access="ViewOnly" />
+        <field table="CC" field="TERMID" access="ViewOnly" />
+        <field table="CC" field="SCHOOLID" access="ViewOnly" />
+        <field table="CC" field="DATEENROLLED" access="ViewOnly" />
+        <field table="CC" field="DATELEFT" access="ViewOnly" />
+
+        <field table="STANDARDS" field="ID" access="ViewOnly" />
+        <field table="STANDARDS" field="DCID" access="ViewOnly" />
+        <field table="STANDARDS" field="IDENTIFIER" access="ViewOnly" />
+        <field table="STANDARDS" field="NAME" access="ViewOnly" />
+        <field table="STANDARDS" field="DESCRIPTION" access="ViewOnly" />
+        <field table="STANDARDS" field="SUBJECTAREA" access="ViewOnly" />
+        <field table="STANDARDS" field="sortorder" access="ViewOnly" />
+
+        <field table="STANDARD" field="STANDARDID" access="ViewOnly" />
+        <field table="STANDARD" field="IDENTIFIER" access="ViewOnly" />
+        <field table="STANDARD" field="NAME" access="ViewOnly" />
+
+        <field table="STOREDGRADES" field="DCID" access="ViewOnly" />
+        <field table="STOREDGRADES" field="STUDENTID" access="ViewOnly" />
+        <field table="STOREDGRADES" field="SCHOOLID" access="ViewOnly" />
+        <field table="STOREDGRADES" field="TERMID" access="ViewOnly" />
+        <field table="STOREDGRADES" field="COURSE_NUMBER" access="ViewOnly" />
+        <field table="STOREDGRADES" field="SECTIONID" access="ViewOnly" />
+        <field table="STOREDGRADES" field="GRADE" access="ViewOnly" />
+        <field table="STOREDGRADES" field="PERCENT" access="ViewOnly" />
+        <field table="STOREDGRADES" field="GPA_POINTS" access="ViewOnly" />
+        <field table="STOREDGRADES" field="STORECODE" access="ViewOnly" />
+
+        <field table="ATTENDANCE" field="ID" access="ViewOnly" />
+        <field table="ATTENDANCE" field="DCID" access="ViewOnly" />
+        <field table="ATTENDANCE" field="STUDENTID" access="ViewOnly" />
+        <field table="ATTENDANCE" field="ATT_DATE" access="ViewOnly" />
+        <field table="ATTENDANCE" field="ATTENDANCE_CODEID" access="ViewOnly" />
+        <field table="ATTENDANCE" field="PERIODID" access="ViewOnly" />
+        <field table="ATTENDANCE" field="SCHOOLID" access="ViewOnly" />
+        <field table="ATTENDANCE" field="YearID" access="ViewOnly" />
+        <field table="ATTENDANCE" field="ATT_MODE_CODE" access="ViewOnly" />
+
+        <field table="ATTENDANCE_CODE" field="ID" access="ViewOnly" />
+        <field table="ATTENDANCE_CODE" field="DCID" access="ViewOnly" />
+        <field table="ATTENDANCE_CODE" field="SCHOOLID" access="ViewOnly" />
+        <field table="ATTENDANCE_CODE" field="YEARID" access="ViewOnly" />
+        <field table="ATTENDANCE_CODE" field="ATT_CODE" access="ViewOnly" />
+        <field table="ATTENDANCE_CODE" field="DESCRIPTION" access="ViewOnly" />
+        <field table="ATTENDANCE_CODE" field="PRESENCE_STATUS_CD" access="ViewOnly" />
+
+        <field table="PERSON" field="ID" access="ViewOnly" />
+        <field table="PERSON" field="DCID" access="ViewOnly" />
+        <field table="PERSON" field="FIRSTNAME" access="ViewOnly" />
+        <field table="PERSON" field="LASTNAME" access="ViewOnly" />
+        <field table="PERSON" field="MIDDLENAME" access="ViewOnly" />
+        <field table="PERSON" field="ISACTIVE" access="ViewOnly" />
+
+        <field table="STUDENTCONTACTASSOC" field="STUDENTCONTACTASSOCID" access="ViewOnly" />
+        <field table="STUDENTCONTACTASSOC" field="STUDENTDCID" access="ViewOnly" />
+        <field table="STUDENTCONTACTASSOC" field="PERSONID" access="ViewOnly" />
+        <field table="STUDENTCONTACTASSOC" field="CONTACTPRIORITYORDER" access="ViewOnly" />
+        <field table="STUDENTCONTACTASSOC" field="CURRRELTYPECODESETID" access="ViewOnly" />
+
+        <field table="EMAILADDRESS" field="EMAILADDRESSID" access="ViewOnly" />
+        <field table="EMAILADDRESS" field="EMAILADDRESS" access="ViewOnly" />
+
+        <field table="PERSONEMAILADDRESSASSOC" field="PERSONEMAILADDRESSASSOCID" access="ViewOnly" />
+        <field table="PERSONEMAILADDRESSASSOC" field="PERSONID" access="ViewOnly" />
+        <field table="PERSONEMAILADDRESSASSOC" field="EMAILADDRESSID" access="ViewOnly" />
+        <field table="PERSONEMAILADDRESSASSOC" field="ISPRIMARYEMAILADDRESS" access="ViewOnly" />
+
+        <field table="PHONENUMBER" field="PHONENUMBERID" access="ViewOnly" />
+        <field table="PHONENUMBER" field="PHONENUMBER" access="ViewOnly" />
+
+        <field table="PERSONPHONENUMBERASSOC" field="PERSONPHONENUMBERASSOCID" access="ViewOnly" />
+        <field table="PERSONPHONENUMBERASSOC" field="PERSONID" access="ViewOnly" />
+        <field table="PERSONPHONENUMBERASSOC" field="PHONENUMBERID" access="ViewOnly" />
+        <field table="PERSONPHONENUMBERASSOC" field="ISPREFERRED" access="ViewOnly" />
+
+        <field table="STANDARDGRADESECTION" field="STANDARDGRADESECTIONID" access="ViewOnly" />
+        <field table="STANDARDGRADESECTION" field="STUDENTSDCID" access="ViewOnly" />
+        <field table="STANDARDGRADESECTION" field="SECTIONSDCID" access="ViewOnly" />
+        <field table="STANDARDGRADESECTION" field="STANDARDID" access="ViewOnly" />
+        <field table="STANDARDGRADESECTION" field="STANDARDGRADE" access="ViewOnly" />
+        <field table="STANDARDGRADESECTION" field="STORECODE" access="ViewOnly" />
+        <field table="STANDARDGRADESECTION" field="YEARID" access="ViewOnly" />
+
+    </access_request>
+        
+    <publisher name="help@infocare.org.cn">
+        <contact email="help@infocare.org.cn"/>
+    </publisher>
+</plugin>
