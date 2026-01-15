@@ -15,6 +15,7 @@ import {
 import path from 'path';
 import type { ReportData, ScoreLevel } from '@/types';
 import { SCORE_DEFINITIONS } from '@/types/grade';
+import { getGradeLevelName } from '@/lib/config/grade.config';
 
 // 注册思源黑体（支持中文）
 const fontPath = path.join(process.cwd(), 'public', 'fonts');
@@ -380,7 +381,7 @@ export function ReportPDF({ data, logoUrl }: ReportPDFProps) {
           </View>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Grade Level:</Text>
-            <Text style={styles.infoValue}>Grade {student.gradeLevel}</Text>
+            <Text style={styles.infoValue}>{getGradeLevelName(student.gradeLevel)}</Text>
           </View>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Year:</Text>

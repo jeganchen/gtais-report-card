@@ -2,12 +2,15 @@
 
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, Filter, FileText, Mail, CheckCircle2, RefreshCw } from 'lucide-react';
+import { Search, Filter, FileText, Mail, CheckCircle2, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button, Badge, Loading } from '@/components/ui';
 import { StudentTable } from './StudentTable';
 import { BatchActions } from './BatchActions';
 import { useSelectionStore } from '@/stores/useSelectionStore';
+import { getGradeLevelName } from '@/lib/config/grade.config';
 import type { Student } from '@/types';
+
+const PAGE_SIZE = 20; // 每页 20 条记录
 
 export function StudentList() {
   const router = useRouter();
@@ -18,6 +21,9 @@ export function StudentList() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentSchoolId, setCurrentSchoolId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
   const { selectedIds } = useSelectionStore();
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -79,12 +85,19 @@ export function StudentList() {
     };
   }, []);
 
-  // 从 API 获取学生数据（使用防抖后的搜索查询）
+  // 当筛选条件变化时，重置到第一页
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [currentSchoolId, debouncedSearchQuery, gradeFilter]);
+
+  // 从 API 获取学生数据（使用防抖后的搜索查询和分页）
   useEffect(() => {
     async function fetchStudents() {
       if (!currentSchoolId) {
         setIsLoading(false);
         setStudents([]);
+        setTotalCount(0);
+        setTotalPages(1);
         return;
       }
 
@@ -93,8 +106,8 @@ export function StudentList() {
 
       try {
         const params = new URLSearchParams({
-          page: '1',
-          pageSize: '1000', // 获取所有学生
+          page: currentPage.toString(),
+          pageSize: PAGE_SIZE.toString(),
         });
 
         if (debouncedSearchQuery) {
@@ -105,7 +118,7 @@ export function StudentList() {
           params.append('grade', gradeFilter.toString());
         }
 
-        // 如果不是 "all"，才添加 schoolId 过滤
+        // 如果不是 "all"，才添加 schoolId 过滤（使用 schoolNumber）
         if (currentSchoolId !== 'all') {
           params.append('schoolId', currentSchoolId);
         }
@@ -118,17 +131,21 @@ export function StudentList() {
 
         const data = await response.json();
         setStudents(data.students || []);
+        setTotalCount(data.total || 0);
+        setTotalPages(data.totalPages || 1);
       } catch (err) {
         console.error('Failed to fetch students:', err);
         setError(err instanceof Error ? err.message : 'Failed to load students');
         setStudents([]);
+        setTotalCount(0);
+        setTotalPages(1);
       } finally {
         setIsLoading(false);
       }
     }
 
     fetchStudents();
-  }, [currentSchoolId, debouncedSearchQuery, gradeFilter]);
+  }, [currentSchoolId, debouncedSearchQuery, gradeFilter, currentPage]);
 
   // 使用 API 返回的学生数据（已经过服务器端过滤）
   const filteredStudents = students;
@@ -139,12 +156,30 @@ export function StudentList() {
     return Array.from(gradeSet).sort((a, b) => a - b);
   }, [students]);
 
-  // 统计信息
+  // 统计信息 - 使用 totalCount 显示总数
   const stats = useMemo(() => {
-    const total = filteredStudents.length;
     const pdfGenerated = filteredStudents.filter((s) => s.pdfGenerated).length;
-    return { total, pdfGenerated, pending: total - pdfGenerated };
-  }, [filteredStudents]);
+    return { total: totalCount, pdfGenerated, pending: totalCount - pdfGenerated };
+  }, [filteredStudents, totalCount]);
+
+  // 分页处理函数
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
 
   const handleViewReport = (student: Student) => {
     router.push(`/report/${student.id}`);
@@ -247,7 +282,7 @@ export function StudentList() {
             <option value="">All Grades</option>
             {grades.map((grade) => (
               <option key={grade} value={grade}>
-                Grade {grade}
+                {getGradeLevelName(grade)}
               </option>
             ))}
           </select>
@@ -267,6 +302,67 @@ export function StudentList() {
         students={filteredStudents}
         onViewReport={handleViewReport}
       />
+
+      {/* 分页组件 */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between bg-white rounded-xl border border-slate-200 px-4 py-3">
+          <div className="text-sm text-slate-600">
+            显示 {(currentPage - 1) * PAGE_SIZE + 1} - {Math.min(currentPage * PAGE_SIZE, totalCount)} 条，共 {totalCount} 条
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handlePreviousPage}
+              disabled={currentPage === 1}
+              className="flex items-center gap-1"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              上一页
+            </Button>
+            
+            {/* 页码按钮 */}
+            <div className="flex items-center gap-1">
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum: number;
+                if (totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNum = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i;
+                } else {
+                  pageNum = currentPage - 2 + i;
+                }
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => handlePageChange(pageNum)}
+                    className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                      currentPage === pageNum
+                        ? 'bg-[#6b2d5b] text-white'
+                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+            </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleNextPage}
+              disabled={currentPage === totalPages}
+              className="flex items-center gap-1"
+            >
+              下一页
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

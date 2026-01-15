@@ -49,12 +49,11 @@ export function Header() {
           setSchools(filteredSchools);
           
           // 默认选择 "All"（空字符串表示全部）
-          // 使用 psId 作为标识
+          // 使用 schoolNumber 作为标识（与 students.ps_school_id 关联）
           const savedSchoolId = localStorage.getItem('selectedSchoolId');
           if (savedSchoolId && savedSchoolId !== 'all') {
-            const savedPsId = parseInt(savedSchoolId, 10);
-            const savedSchool = filteredSchools.find((s: School) => s.psId === savedPsId);
-            setCurrentSchoolId(savedSchool ? String(savedSchool.psId) : 'all');
+            const savedSchool = filteredSchools.find((s: School) => s.schoolNumber === savedSchoolId);
+            setCurrentSchoolId(savedSchool ? savedSchool.schoolNumber! : 'all');
           } else {
             setCurrentSchoolId('all');
           }
@@ -102,9 +101,9 @@ export function Header() {
   const handleSchoolChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
     setCurrentSchoolId(value);
-    // 保存到localStorage（保存 psId 作为标识）
+    // 保存到localStorage（保存 schoolNumber 作为标识，与 students.ps_school_id 关联）
     localStorage.setItem('selectedSchoolId', value);
-    // 触发页面刷新或全局状态更新，传递 psId
+    // 触发页面刷新或全局状态更新，传递 schoolNumber
     window.dispatchEvent(new CustomEvent('schoolChanged', { detail: { schoolId: value } }));
   };
 
@@ -154,8 +153,8 @@ export function Header() {
               >
                 <option value="all">All Schools</option>
                 {schools.map((school) => (
-                  <option key={school.id} value={String(school.psId)}>
-                    {school.abbreviation || school.name}
+                  <option key={school.id} value={school.schoolNumber || ''}>
+                    {school.abbreviation}
                   </option>
                 ))}
               </select>

@@ -3,6 +3,7 @@
 import { Eye, Check, Minus } from 'lucide-react';
 import { Button, Badge, Checkbox } from '@/components/ui';
 import { useSelectionStore } from '@/stores/useSelectionStore';
+import { getGradeLevelName } from '@/lib/config/grade.config';
 import type { Student } from '@/types';
 
 interface StudentTableProps {
@@ -128,7 +129,7 @@ export function StudentTable({ students, onViewReport }: StudentTableProps) {
                   {/* 年级/班级 */}
                   <td className="px-4 py-4">
                     <Badge variant="primary">
-                      Grade {student.gradeLevel}{student.homeRoom ? ` · ${student.homeRoom}` : ''}
+                      {getGradeLevelName(student.gradeLevel)}{student.homeRoom ? ` · ${student.homeRoom}` : ''}
                     </Badge>
                   </td>
 

@@ -17,8 +17,18 @@
     </query>
 
     <query name="org.infocare.sync.students" coreTable="STUDENTS" flattened="false">
+    <args><arg name="startrow" type="primitive" required="true"/>
+            <arg name="endrow" type="primitive" required="true"/>
+    </args>
         <columns><column column="ID">ID</column><column column="DCID">DCID</column><column column="STUDENT_NUMBER">STUDENT_NUMBER</column><column column="FIRST_NAME">FIRST_NAME</column><column column="LAST_NAME">LAST_NAME</column><column column="MIDDLE_NAME">MIDDLE_NAME</column><column column="GENDER">GENDER</column><column column="GRADE_LEVEL">GRADE_LEVEL</column><column column="SCHOOLID">SCHOOLID</column><column column="HOME_ROOM">HOME_ROOM</column><column column="ENROLL_STATUS">ENROLL_STATUS</column><column column="ENTRYDATE">ENTRYDATE</column><column column="EXITDATE">EXITDATE</column><column column="DOB">DOB</column><column column="FAMILY_IDENT">FAMILY_IDENT</column><column column="STREET">STREET</column><column column="CITY">CITY</column><column column="HOME_PHONE">HOME_PHONE</column><column column="GUARDIANEMAIL">GUARDIANEMAIL</column></columns>
-        <sql><![CDATA[ SELECT ID, DCID, STUDENT_NUMBER, FIRST_NAME, LAST_NAME, MIDDLE_NAME, GENDER, GRADE_LEVEL, SCHOOLID, HOME_ROOM, ENROLL_STATUS, ENTRYDATE, EXITDATE, DOB, FAMILY_IDENT, STREET, CITY, HOME_PHONE, GUARDIANEMAIL FROM STUDENTS ]]></sql>
+        <sql><![CDATA[ 
+        SELECT ID, DCID, STUDENT_NUMBER, FIRST_NAME, LAST_NAME, MIDDLE_NAME, GENDER, GRADE_LEVEL, SCHOOLID, HOME_ROOM, ENROLL_STATUS, ENTRYDATE, EXITDATE, DOB, FAMILY_IDENT, STREET, CITY, HOME_PHONE, GUARDIANEMAIL 
+        from (
+        SELECT ID, DCID, STUDENT_NUMBER, FIRST_NAME, LAST_NAME, MIDDLE_NAME, GENDER, GRADE_LEVEL, SCHOOLID, HOME_ROOM, ENROLL_STATUS, ENTRYDATE, EXITDATE, DOB, FAMILY_IDENT, STREET, CITY, HOME_PHONE, GUARDIANEMAIL, 
+        ROW_NUMBER() OVER (ORDER BY dcid ASC) AS row_num
+        FROM STUDENTS 
+        ) numbered_rows where row_num between :startrow and :endrow
+         ]]></sql>
     </query>
 
     <query name="org.infocare.sync.courses" coreTable="COURSES" flattened="false">

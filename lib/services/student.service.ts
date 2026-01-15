@@ -40,16 +40,22 @@ export class StudentService {
       schoolRepository.findAll(),
     ]);
     
-    // 创建 psId -> school 的映射
+    // 创建 schoolNumber -> school 的映射
+    // 关联关系：students.ps_school_id = schools.school_number
     const schoolMap = new Map<number, { name: string; abbreviation: string | null }>();
     for (const school of schools) {
-      schoolMap.set(school.psId, { name: school.name, abbreviation: school.abbreviation });
+      if (school.schoolNumber) {
+        const schoolNum = parseInt(school.schoolNumber, 10);
+        if (!isNaN(schoolNum)) {
+          schoolMap.set(schoolNum, { name: school.name, abbreviation: school.abbreviation });
+        }
+      }
     }
     
     // 转换学生数据并填充学校名称
     const students = result.students.map(student => {
       const transformed = transformPrismaStudentToFrontend(student);
-      // 根据 schoolId (psId) 获取学校信息
+      // 根据 schoolId (ps_school_id) 获取学校信息（与 schools.school_number 关联）
       if (student.schoolId) {
         const school = schoolMap.get(student.schoolId);
         if (school) {

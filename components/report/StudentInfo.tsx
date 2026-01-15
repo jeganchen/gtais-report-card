@@ -1,6 +1,7 @@
 'use client';
 
 import type { Student } from '@/types';
+import { getGradeLevelName } from '@/lib/config/grade.config';
 
 interface StudentInfoProps {
   student: Student;
@@ -36,7 +37,7 @@ export function StudentInfo({ student, schoolYear, generatedDate }: StudentInfoP
 
       <div className="flex">
         <span className="font-semibold text-slate-700 w-28">Grade Level:</span>
-        <span className="text-slate-900">Grade {student.gradeLevel}</span>
+        <span className="text-slate-900">{getGradeLevelName(student.gradeLevel)}</span>
       </div>
 
       <div className="flex">

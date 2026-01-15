@@ -13,6 +13,7 @@ import { studentRepository, settingsRepository } from '@/lib/database/repositori
 import { fetchStudentStandardsReportDirect, fetchStudentAttendanceStatsDirect } from '@/lib/services/report.service';
 import { getPowerSchoolClient } from '@/lib/powerschool/client';
 import { mockSchoolInfo } from '@/mocks/school';
+import { getGradeLevelName } from '@/lib/config/grade.config';
 import type { ReportData, SignatureSettings, Student } from '@/types';
 import type { AttendanceSummary } from '@/types/attendance';
 import type { StudentGrades } from '@/types/grade';
@@ -337,7 +338,7 @@ export async function POST(request: NextRequest) {
             
             <div style="background-color: #f5eaf3; padding: 15px; border-radius: 8px; margin: 20px 0;">
               <p style="margin: 0;"><strong>Student:</strong> ${dbStudent.firstName} ${dbStudent.lastName}</p>
-              <p style="margin: 5px 0 0;"><strong>Grade:</strong> ${dbStudent.gradeLevel}</p>
+              <p style="margin: 5px 0 0;"><strong>Grade:</strong> ${getGradeLevelName(dbStudent.gradeLevel)}</p>
               <p style="margin: 5px 0 0;"><strong>School Year:</strong> ${schoolYear}</p>
             </div>
             
