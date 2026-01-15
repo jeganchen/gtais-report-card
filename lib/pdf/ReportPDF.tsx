@@ -383,18 +383,14 @@ export function ReportPDF({ data, logoUrl }: ReportPDFProps) {
             <Text style={styles.infoValue}>Grade {student.gradeLevel}</Text>
           </View>
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Class:</Text>
-            <Text style={styles.infoValue}>{student.homeRoom}</Text>
-          </View>
-          <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Year:</Text>
             <Text style={styles.infoValue}>{schoolYear}</Text>
           </View>
         </View>
 
         {/* Attendance */}
-        <View style={styles.table}>
-          <View style={styles.tableHeader}>
+        <View style={styles.table} wrap={false}>
+          <View style={styles.tableHeader} wrap={false}>
             <View style={[styles.tableCell, styles.attendanceLabelCell]}>
               <Text style={styles.tableHeaderText}></Text>
             </View>
@@ -404,14 +400,14 @@ export function ReportPDF({ data, logoUrl }: ReportPDFProps) {
                 style={[
                   styles.tableCell, 
                   styles.attendanceCell,
-                  i === attendance.quarters.length - 1 && styles.tableCellLast,
+                  ...(i === attendance.quarters.length - 1 ? [styles.tableCellLast] : []),
                 ]}
               >
                 <Text style={styles.tableHeaderText}>{q.quarter}</Text>
               </View>
             ))}
           </View>
-          <View style={styles.tableRow}>
+          <View style={styles.tableRow} wrap={false}>
             <View style={[styles.tableCell, styles.attendanceLabelCell]}>
               <Text style={{ fontWeight: 'bold', color: colors.primary }}>Absent</Text>
             </View>
@@ -421,14 +417,14 @@ export function ReportPDF({ data, logoUrl }: ReportPDFProps) {
                 style={[
                   styles.tableCell,
                   styles.attendanceCell,
-                  i === attendance.quarters.length - 1 && styles.tableCellLast,
+                  ...(i === attendance.quarters.length - 1 ? [styles.tableCellLast] : []),
                 ]}
               >
                 <Text style={{ textAlign: 'center' }}>{q.absent}</Text>
               </View>
             ))}
           </View>
-          <View style={[styles.tableRow, { borderBottomWidth: 0 }]}>
+          <View style={[styles.tableRow, { borderBottomWidth: 0 }]} wrap={false}>
             <View style={[styles.tableCell, styles.attendanceLabelCell]}>
               <Text style={{ fontWeight: 'bold', color: colors.primary }}>Tardy</Text>
             </View>
@@ -438,7 +434,7 @@ export function ReportPDF({ data, logoUrl }: ReportPDFProps) {
                 style={[
                   styles.tableCell,
                   styles.attendanceCell,
-                  i === attendance.quarters.length - 1 && styles.tableCellLast,
+                  ...(i === attendance.quarters.length - 1 ? [styles.tableCellLast] : []),
                 ]}
               >
                 <Text style={{ textAlign: 'center' }}>{q.tardy}</Text>
@@ -448,7 +444,7 @@ export function ReportPDF({ data, logoUrl }: ReportPDFProps) {
         </View>
 
         {/* Assessment Key */}
-        <View style={styles.assessmentKey}>
+        <View style={styles.assessmentKey} wrap={false}>
           <Text style={styles.sectionTitle}>Assessment Key</Text>
           <View style={styles.table}>
             {assessmentScores.map((score, i) => (
@@ -456,8 +452,9 @@ export function ReportPDF({ data, logoUrl }: ReportPDFProps) {
                 key={score}
                 style={[
                   styles.assessmentRow,
-                  i === assessmentScores.length - 1 && { borderBottomWidth: 0 },
+                  ...(i === assessmentScores.length - 1 ? [{ borderBottomWidth: 0 }] : []),
                 ]}
+                wrap={false}
               >
                 <Text style={styles.assessmentScore}>{score}</Text>
                 <Text style={styles.assessmentDesc}>
@@ -473,7 +470,7 @@ export function ReportPDF({ data, logoUrl }: ReportPDFProps) {
         <Text style={styles.sectionTitle}>Student Progress Report</Text>
         {grades.subjects.map((subject) => (
           <View key={subject.id} style={styles.subjectTable}>
-            <View style={styles.tableHeader}>
+            <View style={styles.tableHeader} wrap={false}>
               <Text style={styles.subjectHeader}>{subject.name}</Text>
               <View style={styles.quarterCell}>
                 <Text style={styles.tableHeaderText}>Q1</Text>
@@ -493,9 +490,10 @@ export function ReportPDF({ data, logoUrl }: ReportPDFProps) {
                 key={standard.id}
                 style={[
                   styles.tableRow,
-                  idx % 2 === 1 && styles.tableRowAlt,
-                  idx === subject.standards.length - 1 && { borderBottomWidth: 0 },
+                  ...(idx % 2 === 1 ? [styles.tableRowAlt] : []),
+                  ...(idx === subject.standards.length - 1 ? [{ borderBottomWidth: 0 }] : []),
                 ]}
+                wrap={false}
               >
                 <Text style={styles.standardName}>{standard.name}</Text>
                 {standard.quarterScores.map((qs, i) => (
@@ -503,7 +501,7 @@ export function ReportPDF({ data, logoUrl }: ReportPDFProps) {
                     key={qs.quarter}
                     style={[
                       styles.scoreCell,
-                      i === standard.quarterScores.length - 1 && styles.tableCellLast,
+                      ...(i === standard.quarterScores.length - 1 ? [styles.tableCellLast] : []),
                     ]}
                   >
                     <Text style={[styles.scoreBadge, getScoreStyle(qs.score)]}>{qs.score}</Text>

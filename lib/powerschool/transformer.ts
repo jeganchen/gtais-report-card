@@ -325,4 +325,3 @@ export function transformPrismaAttendanceToFrontend(records: Array<{
     tardy: r.tardy,
   }));
 }
-

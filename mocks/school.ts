@@ -9,9 +9,9 @@ export const mockSchoolInfo: SchoolInfo = {
   nameChinese: '汕头市广东以色列理工学院附属外籍人员子女学校',
   logoUrl: '/GTAIS.png',
   address: 'Shantou, Guangdong, China',
-  phone: '+86 754 8890 0000',
-  email: 'info@gtiit-school.edu.cn',
-  website: 'www.gtiit-school.edu.cn',
+  phone: '+86 754 8678 7881',
+  email: 'academicoffice@gtais.org',
+  website: 'https://www.gtais.org/',
   principalName: 'School Director',
   principalTitle: 'Director',
 };

@@ -5,6 +5,7 @@
  */
 
 import { settingsRepository, syncLogRepository, schoolRepository, termRepository, teacherRepository, studentRepository, type SyncType } from '../database/repositories';
+import { tokenManager } from '../powerschool/token-manager';
 import type { SyncDataType, SyncResult } from '@/types/powerschool';
 
 export class SyncService {
@@ -14,6 +15,7 @@ export class SyncService {
 
   /**
    * 初始化配置
+   * 如果 token 过期，自动刷新并保存到数据库
    */
   private async initConfig(): Promise<void> {
     const config = await settingsRepository.getPowerSchoolConfig();
@@ -22,24 +24,23 @@ export class SyncService {
       throw new Error('PowerSchool configuration is incomplete');
     }
     
-    if (!config.accessToken) {
-      throw new Error('PowerSchool access token not found. Please get a token first.');
-    }
-    
-    // 检查token是否过期
-    if (config.tokenExpiresAt && new Date(config.tokenExpiresAt) < new Date()) {
-      throw new Error('PowerSchool access token has expired. Please refresh the token.');
+    // 使用 tokenManager 确保有有效 token（过期会自动刷新并保存到数据库）
+    try {
+      this.accessToken = await tokenManager.ensureValidToken();
+    } catch (error) {
+      console.error('Failed to get valid token:', error);
+      throw new Error('Failed to obtain valid PowerSchool access token. Please check your configuration.');
     }
     
     this.endpoint = config.endpoint.replace(/\/+$/, '');
-    this.accessToken = config.accessToken;
     this.schoolId = config.schoolId;
   }
 
   /**
    * 执行PowerSchool Named Query
+   * 如果返回 401，自动刷新 token 并重试一次
    */
-  private async executeQuery<T>(queryName: string, params: Record<string, unknown> = {}): Promise<T> {
+  private async executeQuery<T>(queryName: string, params: Record<string, unknown> = {}, isRetry = false): Promise<T> {
     await this.initConfig();
     
     const url = `${this.endpoint}/ws/schema/query/${queryName}`;
@@ -53,6 +54,20 @@ export class SyncService {
       },
       body: JSON.stringify(params),
     });
+    
+    // 如果返回 401 且不是重试，则刷新 token 并重试
+    if (response.status === 401 && !isRetry) {
+      console.log('[SyncService] Token expired, refreshing...');
+      try {
+        const newToken = await tokenManager.fetchNewToken();
+        this.accessToken = newToken.accessToken;
+        console.log('[SyncService] Token refreshed successfully, retrying request...');
+        return this.executeQuery<T>(queryName, params, true);
+      } catch (refreshError) {
+        console.error('[SyncService] Failed to refresh token:', refreshError);
+        throw new Error('PowerSchool access token expired and refresh failed.');
+      }
+    }
     
     if (!response.ok) {
       const errorText = await response.text();

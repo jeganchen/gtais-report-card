@@ -40,11 +40,6 @@ export function StudentInfo({ student, schoolYear, generatedDate }: StudentInfoP
       </div>
 
       <div className="flex">
-        <span className="font-semibold text-slate-700 w-28">Class:</span>
-        <span className="text-slate-900">{student.homeRoom}</span>
-      </div>
-
-      <div className="flex">
         <span className="font-semibold text-slate-700 w-28">Year:</span>
         <span className="text-slate-900">{schoolYear}</span>
       </div>
