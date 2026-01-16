@@ -10,7 +10,7 @@ interface AuthLayoutProps {
 
 export default function AuthLayout({ children }: AuthLayoutProps) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#2d1226] via-[#4c2341] to-[#2d1226]">
+    <div className="min-h-screen bg-gradient-to-br from-[#1a0f2a] via-[#2E1A4A] to-[#1a0f2a]">
       {children}
     </div>
   );

@@ -87,7 +87,7 @@ export function SettingsForm() {
     return (
       <div className="bg-white rounded-xl border border-slate-200 p-12">
         <div className="flex flex-col items-center justify-center gap-3">
-          <Loader2 className="w-8 h-8 animate-spin text-[#6b2d5b]" />
+          <Loader2 className="w-8 h-8 animate-spin text-[#2E1A4A]" />
           <p className="text-slate-500">Loading settings...</p>
         </div>
       </div>
@@ -102,7 +102,7 @@ export function SettingsForm() {
           <p className="text-red-600">{loadError}</p>
           <button
             onClick={() => window.location.reload()}
-            className="text-sm text-[#6b2d5b] hover:underline"
+            className="text-sm text-[#2E1A4A] hover:underline"
           >
             Try again
           </button>
@@ -124,7 +124,7 @@ export function SettingsForm() {
                 px-6 py-4 text-sm font-medium border-b-2 transition-colors
                 ${
                   activeTab === tab.id
-                    ? 'border-[#6b2d5b] text-[#6b2d5b]'
+                    ? 'border-[#2E1A4A] text-[#2E1A4A]'
                     : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
                 }
               `}

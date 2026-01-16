@@ -42,7 +42,7 @@ export function Header() {
         if (response.ok) {
           const data = await response.json();
           // 只显示 school_number 为 1,2,3,4,5 的学校
-          const validSchoolNumbers = ['1', '2', '3', '4', '5'];
+          const validSchoolNumbers = ['1', '2', '3', '4'];
           const filteredSchools = (data.schools || []).filter((s: School) => 
             s.schoolNumber && validSchoolNumbers.includes(s.schoolNumber)
           );
@@ -129,7 +129,7 @@ export function Header() {
     <header className="sticky top-0 z-30 bg-white border-b border-slate-200">
       <div className="flex items-center justify-between h-16 px-6">
         {/* 左侧 - 移动端菜单按钮 */}
-        <button className="lg:hidden p-2 text-slate-600 hover:bg-[#f5eaf3] rounded-lg">
+        <button className="lg:hidden p-2 text-slate-600 hover:bg-[#f5f3f7] rounded-lg">
           <Menu className="w-5 h-5" />
         </button>
 
@@ -147,7 +147,7 @@ export function Header() {
             <div className="hidden md:flex items-center gap-2">
               <Building2 className="w-4 h-4 text-slate-400" />
               <select 
-                className="px-2 py-1.5 text-sm bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:ring-2 focus:ring-[#8b3d75] focus:border-transparent cursor-pointer min-w-[140px]"
+                className="px-2 py-1.5 text-sm bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:ring-2 focus:ring-[#3d2563] focus:border-transparent cursor-pointer min-w-[140px]"
                 value={currentSchoolId}
                 onChange={handleSchoolChange}
               >
@@ -163,14 +163,14 @@ export function Header() {
 
           {/* 学期选择 */}
           {isLoadingTerms ? (
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 text-sm bg-[#f5eaf3] rounded-lg text-[#6b2d5b]">
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 text-sm bg-[#f5f3f7] rounded-lg text-[#2E1A4A]">
               <RefreshCw className="w-3 h-3 animate-spin" />
             </div>
           ) : terms.length > 0 ? (
             <div className="hidden sm:flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-[#8b3d75]" />
+              <Calendar className="w-4 h-4 text-[#3d2563]" />
               <select 
-                className="px-2 py-1.5 text-sm bg-[#f5eaf3] border-0 rounded-lg text-[#6b2d5b] focus:ring-2 focus:ring-[#8b3d75] cursor-pointer min-w-[100px]"
+                className="px-2 py-1.5 text-sm bg-[#f5f3f7] border-0 rounded-lg text-[#2E1A4A] focus:ring-2 focus:ring-[#3d2563] cursor-pointer min-w-[100px]"
                 value={currentTermId}
                 onChange={handleTermChange}
               >
@@ -201,8 +201,8 @@ export function Header() {
                 {session?.user?.email}
               </p>
             </div>
-            <div className="flex items-center justify-center w-9 h-9 bg-[#f5eaf3] rounded-full">
-              <User className="w-4 h-4 text-[#6b2d5b]" />
+            <div className="flex items-center justify-center w-9 h-9 bg-[#f5f3f7] rounded-full">
+              <User className="w-4 h-4 text-[#2E1A4A]" />
             </div>
             <Button
               variant="ghost"

@@ -10,7 +10,23 @@ const USE_DATABASE = process.env.USE_DATABASE === 'true';
 
 export async function POST(request: Request) {
   try {
-    const { endpoint, clientId, clientSecret, saveToDb } = await request.json();
+    const body = await request.json();
+    let { endpoint, clientId, clientSecret, saveToDb, refreshFromDb } = body;
+
+    // 如果是刷新模式，从数据库获取凭据
+    if (refreshFromDb && USE_DATABASE) {
+      const config = await settingsRepository.getPowerSchoolConfig();
+      if (!config.endpoint || !config.clientId || !config.clientSecret) {
+        return NextResponse.json(
+          { error: 'PowerSchool configuration not found in database. Please configure first.' },
+          { status: 400 }
+        );
+      }
+      endpoint = config.endpoint;
+      clientId = config.clientId;
+      clientSecret = config.clientSecret;
+      saveToDb = true;
+    }
 
     // 验证必填字段
     if (!endpoint || !clientId || !clientSecret) {

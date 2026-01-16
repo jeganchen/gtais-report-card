@@ -10,6 +10,9 @@ import { mockStudents } from '@/mocks';
 // 是否使用数据库（可以通过环境变量控制）
 const USE_DATABASE = process.env.USE_DATABASE === 'true';
 
+// 有效的学校编号（当选择 All Schools 时，只显示这些学校的学生）
+const VALID_SCHOOL_NUMBERS = [1, 2, 3, 4];
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   
@@ -26,7 +29,9 @@ export async function GET(request: Request) {
         {
           search: search || undefined,
           gradeLevel: grade ? parseInt(grade) : undefined,
-          schoolId: schoolId ? parseInt(schoolId, 10) : undefined, // schoolId 现在是 number 类型 (ps_school_id)
+          // 如果指定了 schoolId，使用单个学校过滤；否则使用 VALID_SCHOOL_NUMBERS 过滤
+          schoolId: schoolId ? parseInt(schoolId, 10) : undefined,
+          schoolIds: schoolId ? undefined : VALID_SCHOOL_NUMBERS, // All Schools 时使用多个学校过滤
         },
         { page, pageSize }
       );

@@ -28,6 +28,8 @@ export interface Student {
   pdfGenerated: boolean;       // 是否已生成PDF
   pdfGeneratedAt?: string;     // PDF生成时间
   pdfUrl?: string;             // PDF文件URL
+  emailSent?: boolean;         // 是否已发送邮件
+  emailSentAt?: string;        // 邮件发送时间
 }
 
 export interface StudentListResponse {

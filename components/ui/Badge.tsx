@@ -16,7 +16,7 @@ const Badge = ({ children, variant = 'default', size = 'md', className = '' }: B
     warning: 'bg-amber-100 text-amber-700',
     error: 'bg-red-100 text-red-700',
     info: 'bg-blue-100 text-blue-700',
-    primary: 'bg-[#f5eaf3] text-[#6b2d5b]',  // GTIIT紫色
+    primary: 'bg-[#f5f3f7] text-[#2E1A4A]',  // GTIIT紫色
   };
 
   const sizes = {

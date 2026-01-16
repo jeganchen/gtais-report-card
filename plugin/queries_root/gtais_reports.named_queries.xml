@@ -71,23 +71,67 @@
     </query>
 
     <query name="org.infocare.sync.person" coreTable="PERSON" flattened="false">
+        <args>
+            <arg name="startrow" type="primitive" required="true"/>
+            <arg name="endrow" type="primitive" required="true"/>
+        </args>
         <columns><column column="ID">ID</column><column column="DCID">DCID</column><column column="FIRSTNAME">FIRSTNAME</column><column column="LASTNAME">LASTNAME</column><column column="MIDDLENAME">MIDDLENAME</column><column column="ISACTIVE">ISACTIVE</column></columns>
-        <sql><![CDATA[ SELECT ID, DCID, FIRSTNAME, LASTNAME, MIDDLENAME, ISACTIVE FROM PERSON ]]></sql>
+        <sql><![CDATA[ 
+        SELECT ID, DCID, FIRSTNAME, LASTNAME, MIDDLENAME, ISACTIVE 
+        FROM (
+            SELECT ID, DCID, FIRSTNAME, LASTNAME, MIDDLENAME, ISACTIVE,
+            ROW_NUMBER() OVER (ORDER BY DCID ASC) AS row_num
+            FROM PERSON
+        ) numbered_rows WHERE row_num BETWEEN :startrow AND :endrow
+        ]]></sql>
     </query>
 
     <query name="org.infocare.sync.student_contact_assoc" coreTable="STUDENTCONTACTASSOC" flattened="false">
+        <args>
+            <arg name="startrow" type="primitive" required="true"/>
+            <arg name="endrow" type="primitive" required="true"/>
+        </args>
         <columns><column column="STUDENTCONTACTASSOCID">STUDENTCONTACTASSOCID</column><column column="STUDENTDCID">STUDENTDCID</column><column column="PERSONID">PERSONID</column><column column="CONTACTPRIORITYORDER">CONTACTPRIORITYORDER</column><column column="CURRRELTYPECODESETID">CURRRELTYPECODESETID</column></columns>
-        <sql><![CDATA[ SELECT STUDENTCONTACTASSOCID, STUDENTDCID, PERSONID, CONTACTPRIORITYORDER, CURRRELTYPECODESETID FROM STUDENTCONTACTASSOC ]]></sql>
+        <sql><![CDATA[ 
+        SELECT STUDENTCONTACTASSOCID, STUDENTDCID, PERSONID, CONTACTPRIORITYORDER, CURRRELTYPECODESETID 
+        FROM (
+            SELECT STUDENTCONTACTASSOCID, STUDENTDCID, PERSONID, CONTACTPRIORITYORDER, CURRRELTYPECODESETID,
+            ROW_NUMBER() OVER (ORDER BY STUDENTCONTACTASSOCID ASC) AS row_num
+            FROM STUDENTCONTACTASSOC
+        ) numbered_rows WHERE row_num BETWEEN :startrow AND :endrow
+        ]]></sql>
     </query>
 
     <query name="org.infocare.sync.emailaddress" coreTable="EMAILADDRESS" flattened="false">
+        <args>
+            <arg name="startrow" type="primitive" required="true"/>
+            <arg name="endrow" type="primitive" required="true"/>
+        </args>
         <columns><column column="EMAILADDRESSID">EMAILADDRESSID</column><column column="EMAILADDRESS">EMAILADDRESS</column></columns>
-        <sql><![CDATA[ SELECT EMAILADDRESSID, EMAILADDRESS FROM EMAILADDRESS ]]></sql>
+        <sql><![CDATA[ 
+        SELECT EMAILADDRESSID, EMAILADDRESS 
+        FROM (
+            SELECT EMAILADDRESSID, EMAILADDRESS,
+            ROW_NUMBER() OVER (ORDER BY EMAILADDRESSID ASC) AS row_num
+            FROM EMAILADDRESS
+        ) numbered_rows WHERE row_num BETWEEN :startrow AND :endrow
+        ]]></sql>
     </query>
 
     <query name="org.infocare.sync.person_email_assoc" coreTable="PERSONEMAILADDRESSASSOC" flattened="false">
+        <args>
+            <arg name="startrow" type="primitive" required="true"/>
+            <arg name="endrow" type="primitive" required="true"/>
+        </args>
         <columns><column column="PERSONEMAILADDRESSASSOCID">PERSONEMAILADDRESSASSOCID</column><column column="PERSONID">PERSONID</column><column column="EMAILADDRESSID">EMAILADDRESSID</column><column column="ISPRIMARYEMAILADDRESS">ISPRIMARYEMAILADDRESS</column></columns>
-        <sql><![CDATA[ SELECT PERSONEMAILADDRESSASSOCID, PERSONID, EMAILADDRESSID, ISPRIMARYEMAILADDRESS FROM PERSONEMAILADDRESSASSOC ]]></sql>
+        <sql><![CDATA[ 
+        SELECT PERSONEMAILADDRESSASSOCID, PERSONID, EMAILADDRESSID, ISPRIMARYEMAILADDRESS 
+        FROM (
+            SELECT PERSONEMAILADDRESSASSOCID, PERSONID, EMAILADDRESSID, ISPRIMARYEMAILADDRESS,
+            ROW_NUMBER() OVER (ORDER BY PERSONEMAILADDRESSASSOCID ASC) AS row_num
+            FROM PERSONEMAILADDRESSASSOC
+        ) numbered_rows WHERE row_num BETWEEN :startrow AND :endrow
+        ]]></sql>
     </query>
 
     <query name="org.infocare.sync.phonenumber" coreTable="PHONENUMBER" flattened="false">

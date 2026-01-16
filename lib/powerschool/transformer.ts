@@ -174,6 +174,8 @@ export function transformPrismaStudentToFrontend(student: {
   pdfGenerated: boolean;
   pdfGeneratedAt?: Date | null;
   pdfUrl?: string | null;
+  emailSent?: boolean;
+  emailSentAt?: Date | null;
   schoolId?: number;  // 改为 number 类型，存储 PowerSchool school ID
   contacts?: Array<{
     person: {
@@ -243,6 +245,8 @@ export function transformPrismaStudentToFrontend(student: {
     pdfGenerated: student.pdfGenerated,
     pdfGeneratedAt: student.pdfGeneratedAt?.toISOString(),
     pdfUrl: student.pdfUrl || undefined,
+    emailSent: student.emailSent ?? false,
+    emailSentAt: student.emailSentAt?.toISOString(),
   };
 }
 

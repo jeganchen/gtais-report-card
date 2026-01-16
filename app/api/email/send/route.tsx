@@ -181,9 +181,9 @@ async function generatePDFForStudent(
     generatedAt: new Date().toISOString(),
   };
 
-  // 生成PDF
+  // 生成PDF - 使用官方信头模板
   const pdfBuffer = await renderToBuffer(
-    <ReportPDF data={reportData} logoUrl={logoUrl} />
+    <ReportPDF data={reportData} />
   );
 
   return Buffer.from(pdfBuffer);
@@ -328,24 +328,24 @@ export async function POST(request: NextRequest) {
         const emailHtml = customBody || `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
             <div style="text-align: center; margin-bottom: 20px;">
-              <h2 style="color: #6b2d5b; margin: 0;">GTIIT Affiliated International School</h2>
-              <p style="color: #8b3d75; margin: 5px 0;">汕头市广东以色列理工学院附属外籍人员子女学校</p>
+              <h2 style="color: #2E1A4A; margin: 0;">GTIIT Affiliated International School</h2>
+              <p style="color: #3d2563; margin: 5px 0;">汕头市广东以色列理工学院附属外籍人员子女学校</p>
             </div>
             
             <p>Dear Parent/Guardian,</p>
             
-            <p>Please find attached the Progress Report for <strong>${dbStudent.firstName} ${dbStudent.lastName}</strong>${dbStudent.chineseName ? ` (${dbStudent.chineseName})` : ''} for the ${schoolYear} school year.</p>
+            <p>Please find attached <strong>${dbStudent.firstName} ${dbStudent.lastName}</strong>${dbStudent.chineseName ? ` (${dbStudent.chineseName})` : ''}'s quarterly progress Report for the ${schoolYear} school year.</p>
             
-            <div style="background-color: #f5eaf3; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <div style="background-color: #f5f3f7; padding: 15px; border-radius: 8px; margin: 20px 0;">
               <p style="margin: 0;"><strong>Student:</strong> ${dbStudent.firstName} ${dbStudent.lastName}</p>
               <p style="margin: 5px 0 0;"><strong>Grade:</strong> ${getGradeLevelName(dbStudent.gradeLevel)}</p>
               <p style="margin: 5px 0 0;"><strong>School Year:</strong> ${schoolYear}</p>
             </div>
             
-            <p>If you have any questions about this report, please don't hesitate to contact us.</p>
+            <p>If you have any questions about this report, please don't hesitate to contact us at academicoffice@gtais.org.</p>
             
             <p>Best regards,<br>
-            <strong>GTAIS Administration</strong></p>
+            <strong>GTAIS Academic Office</strong></p>
             
             <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
             
@@ -377,6 +377,9 @@ export async function POST(request: NextRequest) {
 
         // 更新学生的 PDF 状态
         await studentRepository.updatePdfStatus(studentId, fileName);
+        
+        // 更新学生的邮件发送状态
+        await studentRepository.updateEmailStatus(studentId);
 
         results.sent++;
         console.log(`[Email] Successfully sent email to ${guardianEmails.length} recipient(s) [${allRecipients}] for student ${studentName}`);

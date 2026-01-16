@@ -1,54 +1,58 @@
 'use client';
 
 import Image from 'next/image';
-import type { SchoolInfo, SignatureSettings } from '@/types';
+import type { SignatureSettings } from '@/types';
 
 interface ReportFooterProps {
-  schoolInfo: SchoolInfo;
   signature?: SignatureSettings;
-  generatedAt?: string;
+  showSignature?: boolean;  // 是否显示签名区域
 }
 
-export function ReportFooter({ schoolInfo, signature }: ReportFooterProps) {
-  // 使用签名设置，如果没有则使用schoolInfo中的默认值
-  const principalName = signature?.principalName || schoolInfo.principalName || '';
-  const principalTitle = signature?.principalTitle || schoolInfo.principalTitle || 'Principal';
+/**
+ * Report Footer - 基于官方 AIS Letter Head 模板
+ */
+export function ReportFooter({ signature, showSignature = true }: ReportFooterProps) {
+  const principalName = signature?.principalName || '';
+  const principalTitle = signature?.principalTitle || 'Principal';
   const signatureImageUrl = signature?.signatureImageUrl;
 
   return (
-    <div className="mt-6 pt-4 border-t-2 border-[#6b2d5b]">
-      {/* 签名区域 */}
-      <div className="flex justify-end mb-6">
-        <div className="w-64 text-center">
-          {/* 签名图片或签名线 */}
-          {signatureImageUrl ? (
-            <div className="h-16 mb-2 relative">
-              <Image
-                src={signatureImageUrl}
-                alt="Principal Signature"
-                fill
-                className="object-contain"
-              />
-            </div>
-          ) : (
-            <div className="border-b border-[#8b3d75] h-16 mb-2"></div>
-          )}
-          
-          {/* 校长姓名和职位 */}
-          {principalName && (
-            <p className="text-sm text-slate-900 font-medium">{principalName}</p>
-          )}
-          <p className="text-xs text-[#6b2d5b]">{principalTitle}</p>
+    <div className="mt-6">
+      {/* 签名区域 - 仅在最后一页显示 */}
+      {showSignature && (
+        <div className="flex justify-end mb-6">
+          <div className="w-64 text-center">
+            {signatureImageUrl ? (
+              <div className="h-16 mb-2 relative">
+                <Image
+                  src={signatureImageUrl}
+                  alt="Principal Signature"
+                  fill
+                  className="object-contain"
+                />
+              </div>
+            ) : (
+              <div className="border-b border-[#545860] h-16 mb-2"></div>
+            )}
+            {principalName && (
+              <p className="text-sm text-slate-900 font-medium">{principalName}</p>
+            )}
+            <p className="text-xs text-[#2E1A4A]">{principalTitle}</p>
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* 学校联系信息 */}
-      <div className="text-center text-xs text-[#8b3d75] space-y-0.5">
-        <p>{schoolInfo.address}</p>
-        <p>
-          Tel: {schoolInfo.phone} | Email: {schoolInfo.email}
+      {/* 学校联系信息 - 基于 AIS Letter Head 模板 */}
+      <div className="text-center border-t border-[#ED8C00] pt-3 space-y-1">
+        <p className="text-sm text-[#2E1A4A]">
+          www.gtais.org   |   [86] 754 - 8678 7111
         </p>
-        {schoolInfo.website && <p>{schoolInfo.website}</p>}
+        <p className="text-sm text-[#2E1A4A]">
+          No.66, Guangyi Road, Jinping District, Shantou, Guangdong
+        </p>
+        <p className="text-xs text-[#2E1A4A]">
+          广东省汕头市金平区广以路66号
+        </p>
       </div>
     </div>
   );

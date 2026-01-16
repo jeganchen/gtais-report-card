@@ -17,7 +17,7 @@ const Loading = ({ size = 'md', text, fullScreen = false }: LoadingProps) => {
 
   const content = (
     <div className="flex flex-col items-center justify-center gap-3">
-      <Loader2 className={`${sizes[size]} animate-spin text-[#6b2d5b]`} />
+      <Loader2 className={`${sizes[size]} animate-spin text-[#2E1A4A]`} />
       {text && <p className="text-sm text-slate-600">{text}</p>}
     </div>
   );

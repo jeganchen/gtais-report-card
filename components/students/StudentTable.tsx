@@ -47,8 +47,8 @@ export function StudentTable({ students, onViewReport }: StudentTableProps) {
                       w-5 h-5 rounded border-2 flex items-center justify-center transition-colors
                       ${
                         allSelected || someSelected
-                          ? 'bg-[#6b2d5b] border-[#6b2d5b]'
-                          : 'bg-white border-slate-300 hover:border-[#8b3d75]'
+                          ? 'bg-[#2E1A4A] border-[#2E1A4A]'
+                          : 'bg-white border-slate-300 hover:border-[#3d2563]'
                       }
                     `}
                   >
@@ -75,6 +75,9 @@ export function StudentTable({ students, onViewReport }: StudentTableProps) {
               <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider">
                 PDF Status
               </th>
+              <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                Email Status
+              </th>
               <th className="px-4 py-3 text-right text-xs font-semibold text-slate-600 uppercase tracking-wider">
                 Actions
               </th>
@@ -88,7 +91,7 @@ export function StudentTable({ students, onViewReport }: StudentTableProps) {
                   key={student.id}
                   className={`
                     transition-colors duration-150 hover:bg-slate-50
-                    ${selected ? 'bg-[#faf5f9]' : ''}
+                    ${selected ? 'bg-[#f5f3f7]' : ''}
                   `}
                 >
                   {/* 复选框 */}
@@ -104,7 +107,7 @@ export function StudentTable({ students, onViewReport }: StudentTableProps) {
                   {/* 学生信息 */}
                   <td className="px-4 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-[#6b2d5b] to-[#8b3d75] rounded-full text-white font-semibold text-sm">
+                      <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-[#2E1A4A] to-[#3d2563] rounded-full text-white font-semibold text-sm">
                         {student.firstName[0]}{student.lastName[0]}
                       </div>
                       <div>
@@ -147,6 +150,15 @@ export function StudentTable({ students, onViewReport }: StudentTableProps) {
                       <Badge variant="success">Generated</Badge>
                     ) : (
                       <Badge variant="warning">Pending</Badge>
+                    )}
+                  </td>
+
+                  {/* 邮件状态 */}
+                  <td className="px-4 py-4 text-center">
+                    {student.emailSent ? (
+                      <Badge variant="success">Sent</Badge>
+                    ) : (
+                      <Badge variant="secondary">Not Sent</Badge>
                     )}
                   </td>
 

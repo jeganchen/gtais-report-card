@@ -27,10 +27,10 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
               flex items-center justify-center
               ${
                 checked || indeterminate
-                  ? 'bg-[#6b2d5b] border-[#6b2d5b]'
-                  : 'bg-white border-slate-300 group-hover:border-[#8b3d75]'
+                  ? 'bg-[#2E1A4A] border-[#2E1A4A]'
+                  : 'bg-white border-slate-300 group-hover:border-[#3d2563]'
               }
-              peer-focus:ring-2 peer-focus:ring-[#8b3d75] peer-focus:ring-offset-2
+              peer-focus:ring-2 peer-focus:ring-[#3d2563] peer-focus:ring-offset-2
               peer-disabled:opacity-50 peer-disabled:cursor-not-allowed
             `}
           >

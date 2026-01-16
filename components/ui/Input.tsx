@@ -41,7 +41,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               ${
                 error
                   ? 'border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500'
-                  : 'border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-[#8b3d75] focus:border-[#8b3d75]'
+                  : 'border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-[#3d2563] focus:border-[#3d2563]'
               }
               focus:outline-none focus:ring-2 focus:ring-offset-0
               disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed

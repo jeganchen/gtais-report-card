@@ -10,7 +10,8 @@ export interface StudentFilter {
   gradeLevel?: number;
   homeRoom?: string;
   enrollStatus?: number;
-  schoolId?: number;  // 改为 number 类型，存储 PowerSchool school ID (ps_id)
+  schoolId?: number;  // 单个学校过滤，存储 PowerSchool school ID (ps_school_id)
+  schoolIds?: number[];  // 多个学校过滤（用于 All Schools 时限制可见学校）
   pdfGenerated?: boolean;
 }
 
@@ -188,6 +189,9 @@ export class StudentRepository {
 
     if (filter?.schoolId !== undefined) {
       where.schoolId = filter.schoolId;  // schoolId 现在是 Int 类型 (ps_school_id)
+    } else if (filter?.schoolIds && filter.schoolIds.length > 0) {
+      // 多个学校过滤（用于 All Schools 时限制可见学校）
+      where.schoolId = { in: filter.schoolIds };
     }
 
     if (filter?.pdfGenerated !== undefined) {
@@ -286,6 +290,19 @@ export class StudentRepository {
         pdfGenerated: true,
         pdfGeneratedAt: new Date(),
         pdfUrl,
+      },
+    });
+  }
+
+  /**
+   * 更新邮件发送状态
+   */
+  async updateEmailStatus(id: string) {
+    return prisma.student.update({
+      where: { id },
+      data: {
+        emailSent: true,
+        emailSentAt: new Date(),
       },
     });
   }

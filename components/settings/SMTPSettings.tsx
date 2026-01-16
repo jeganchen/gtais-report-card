@@ -138,7 +138,7 @@ export function SMTPSettings({ settings, onChange }: SMTPSettingsProps) {
             onChange={(e) => handleChange('enabled', e.target.checked)}
             className="sr-only peer"
           />
-          <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#6b2d5b]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#6b2d5b]"></div>
+          <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#2E1A4A]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#2E1A4A]"></div>
         </label>
       </div>
 
@@ -166,7 +166,7 @@ export function SMTPSettings({ settings, onChange }: SMTPSettingsProps) {
             <select
               value={settings.secure ? 'ssl' : 'tls'}
               onChange={(e) => handleChange('secure', e.target.value === 'ssl')}
-              className="block w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#8b3d75] focus:border-transparent"
+              className="block w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#3d2563] focus:border-transparent"
             >
               <option value="tls">TLS (Port 587)</option>
               <option value="ssl">SSL (Port 465)</option>
@@ -191,7 +191,7 @@ export function SMTPSettings({ settings, onChange }: SMTPSettingsProps) {
               placeholder="Enter SMTP password"
               value={settings.password}
               onChange={(e) => handleChange('password', e.target.value)}
-              className="block w-full rounded-lg border border-slate-300 pl-4 pr-12 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#8b3d75] focus:border-transparent"
+              className="block w-full rounded-lg border border-slate-300 pl-4 pr-12 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#3d2563] focus:border-transparent"
             />
             <button
               type="button"
@@ -287,10 +287,10 @@ export function SMTPSettings({ settings, onChange }: SMTPSettingsProps) {
       </div>
 
       {/* 常用SMTP配置 */}
-      <div className="p-4 bg-[#faf5f9] rounded-lg border border-[#ebd5e7]">
-        <h4 className="font-medium text-[#6b2d5b] mb-2">Common SMTP Configurations</h4>
-        <div className="text-sm text-[#5a274c] space-y-2">
-          <div className="grid grid-cols-3 gap-2 font-medium border-b border-[#dbb3d3] pb-1">
+      <div className="p-4 bg-[#f5f3f7] rounded-lg border border-[#d7cfdf]">
+        <h4 className="font-medium text-[#2E1A4A] mb-2">Common SMTP Configurations</h4>
+        <div className="text-sm text-[#545860] space-y-2">
+          <div className="grid grid-cols-3 gap-2 font-medium border-b border-[#d7cfdf] pb-1">
             <span>Provider</span>
             <span>Host</span>
             <span>Port</span>

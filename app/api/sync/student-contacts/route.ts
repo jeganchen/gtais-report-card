@@ -1,11 +1,16 @@
 /**
  * 学生联系人关联同步API
  * 从PowerSchool获取学生与联系人的关联数据并保存到数据库
+ * 支持分页查询，自动获取所有关联
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { settingsRepository, studentContactRepository, syncLogRepository } from '@/lib/database/repositories';
 import prisma from '@/lib/database/client';
+import { tokenManager } from '@/lib/powerschool/token-manager';
+
+// 分页配置
+const PAGE_SIZE = 50;
 
 // PowerSchool返回的学生联系人关联数据结构
 interface PSStudentContactAssocRecord {
@@ -29,7 +34,50 @@ interface PSStudentContactAssocsResponse {
 }
 
 /**
- * POST /api/sync/student-contacts - 同步学生联系人关联数据
+ * 调用 PowerSchool API 获取一页学生联系人关联数据
+ * 如果返回 401，自动刷新 token 并重试
+ */
+async function fetchStudentContactsPage(
+  apiUrl: string,
+  accessToken: string,
+  startrow: number,
+  endrow: number,
+  isRetry = false
+): Promise<{ records: PSStudentContactAssocRecord[]; newToken?: string }> {
+  const response = await fetch(apiUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Authorization': `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify({ startrow, endrow }),
+  });
+
+  // 如果返回 401 且不是重试，则刷新 token 并重试
+  if (response.status === 401 && !isRetry) {
+    console.log('[SyncStudentContacts] Token expired, refreshing...');
+    try {
+      const newTokenInfo = await tokenManager.fetchNewToken();
+      console.log('[SyncStudentContacts] Token refreshed successfully, retrying request...');
+      return fetchStudentContactsPage(apiUrl, newTokenInfo.accessToken, startrow, endrow, true);
+    } catch (refreshError) {
+      console.error('[SyncStudentContacts] Failed to refresh token:', refreshError);
+      throw new Error('PowerSchool access token expired and refresh failed.');
+    }
+  }
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`PowerSchool API error: ${response.status} ${response.statusText} - ${errorText}`);
+  }
+
+  const data: PSStudentContactAssocsResponse = await response.json();
+  return { records: data.record || [] };
+}
+
+/**
+ * POST /api/sync/student-contacts - 同步学生联系人关联数据（分页获取所有关联）
  */
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
@@ -45,9 +93,13 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    if (!config.accessToken) {
+    // 使用 tokenManager 确保有有效 token（过期会自动刷新）
+    let accessToken: string;
+    try {
+      accessToken = await tokenManager.ensureValidToken();
+    } catch (error) {
       return NextResponse.json(
-        { error: 'PowerSchool access token not found. Please get a token first.' },
+        { error: 'Failed to obtain valid PowerSchool access token. Please check your configuration.' },
         { status: 401 }
       );
     }
@@ -56,30 +108,46 @@ export async function POST(request: NextRequest) {
     const log = await syncLogRepository.create('contacts');
     await syncLogRepository.start(log.id);
 
-    // 调用PowerSchool API - 无参数
+    // 调用PowerSchool API - 分页获取
     const baseUrl = config.endpoint.replace(/\/+$/, '');
     const apiUrl = `${baseUrl}/ws/schema/query/org.infocare.sync.student_contact_assoc`;
-    console.log(`Calling PowerSchool API: ${apiUrl}`);
-    
-    const response = await fetch(apiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': `Bearer ${config.accessToken}`,
-      },
-      body: JSON.stringify({}),
-    });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('PowerSchool API error:', errorText);
-      await syncLogRepository.fail(log.id, `PowerSchool API error: ${response.status}`);
-      throw new Error(`PowerSchool API error: ${response.status} ${response.statusText}`);
+    const allRecords: PSStudentContactAssocRecord[] = [];
+    let startrow = 1;
+    let endrow = PAGE_SIZE;
+    let pageCount = 0;
+
+    console.log(`[SyncStudentContacts] Starting paginated sync from ${apiUrl}`);
+
+    // 分页循环获取所有数据
+    while (true) {
+      pageCount++;
+      console.log(`[SyncStudentContacts] Fetching page ${pageCount}: rows ${startrow}-${endrow}`);
+
+      const { records, newToken } = await fetchStudentContactsPage(apiUrl, accessToken, startrow, endrow);
+
+      if (newToken) {
+        accessToken = newToken;
+      }
+
+      console.log(`[SyncStudentContacts] Page ${pageCount} returned ${records.length} records`);
+
+      if (records.length === 0) {
+        break;
+      }
+
+      allRecords.push(...records);
+
+      // 如果返回的记录数小于 PAGE_SIZE，说明已经是最后一页
+      if (records.length < PAGE_SIZE) {
+        break;
+      }
+
+      startrow += PAGE_SIZE;
+      endrow += PAGE_SIZE;
     }
 
-    const data: PSStudentContactAssocsResponse = await response.json();
-    console.log(`Received ${data.record?.length || 0} student contact associations from PowerSchool`);
+    console.log(`[SyncStudentContacts] Total fetched: ${allRecords.length} associations in ${pageCount} pages`);
 
     // 获取所有学生和个人的映射
     const students = await prisma.student.findMany({
@@ -103,7 +171,7 @@ export async function POST(request: NextRequest) {
     
     const skipped: Array<{ psId: number; reason: string }> = [];
 
-    for (const record of data.record) {
+    for (const record of allRecords) {
       const assoc = record.tables.studentcontactassoc;
       const psId = parseInt(assoc.studentcontactassocid, 10);
       const studentDcid = parseInt(assoc.studentdcid, 10);
@@ -140,28 +208,24 @@ export async function POST(request: NextRequest) {
 
     const duration = Date.now() - startTime;
     await syncLogRepository.complete(log.id, assocsToSave.length, {
-      associations: assocsToSave.map(a => ({ 
+      associations: assocsToSave.slice(0, 20).map(a => ({ 
         id: a.psId, 
         studentId: a.studentId,
         personId: a.personId,
         priority: a.contactPriorityOrder,
       })),
-      skipped,
+      skipped: skipped.slice(0, 20),
+      pageCount,
     });
 
     return NextResponse.json({
       success: true,
-      message: `Successfully synced ${assocsToSave.length} student contact associations`,
+      message: `Successfully synced ${assocsToSave.length} student contact associations in ${pageCount} pages`,
       data: {
         count: assocsToSave.length,
         skipped: skipped.length,
+        pageCount,
         duration: `${duration}ms`,
-        associations: assocsToSave.slice(0, 20).map(a => ({
-          psId: a.psId,
-          studentId: a.studentId,
-          personId: a.personId,
-          priority: a.contactPriorityOrder,
-        })),
       },
     });
 

@@ -204,9 +204,9 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
     console.log(`[PDF] Generating PDF with ${grades.subjects.length} subjects`);
 
-    // 生成PDF
+    // 生成PDF - 使用官方信头模板
     const pdfBuffer = await renderToBuffer(
-      <ReportPDF data={reportData} logoUrl={logoUrl} />
+      <ReportPDF data={reportData} />
     );
 
     // 生成文件名

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Eye, EyeOff, Save, Key, Loader2, CheckCircle, XCircle, Clock, RefreshCw, Calendar, Users, Building2, GraduationCap, Database, BookOpen, ClipboardList, ClipboardCheck, UserCircle, Mail, Link2 } from 'lucide-react';
+import { Eye, EyeOff, Save, Key, Loader2, CheckCircle, XCircle, Clock, RefreshCw, Calendar, Users, Building2, GraduationCap, Database, BookOpen, ClipboardList, ClipboardCheck, UserCircle, Mail, Link2, RotateCcw } from 'lucide-react';
 import { Button, Input } from '@/components/ui';
 import type { PowerSchoolSettings as PowerSchoolSettingsType } from '@/types';
 
@@ -40,7 +40,7 @@ const SYNC_ITEMS: SyncItem[] = [
     key: 'schools',
     name: 'Schools',
     description: 'Sync school information',
-    icon: <Building2 className="w-5 h-5 text-[#6b2d5b]" />,
+    icon: <Building2 className="w-5 h-5 text-[#2E1A4A]" />,
     endpoint: '/api/sync/schools',
     requiresSchoolId: false,
   },
@@ -48,7 +48,7 @@ const SYNC_ITEMS: SyncItem[] = [
     key: 'terms',
     name: 'Terms',
     description: 'Sync terms and school years',
-    icon: <Calendar className="w-5 h-5 text-[#6b2d5b]" />,
+    icon: <Calendar className="w-5 h-5 text-[#2E1A4A]" />,
     endpoint: '/api/sync/terms',
     requiresSchoolId: true,
   },
@@ -56,7 +56,7 @@ const SYNC_ITEMS: SyncItem[] = [
     key: 'teachers',
     name: 'Teachers',
     description: 'Sync teacher information',
-    icon: <GraduationCap className="w-5 h-5 text-[#6b2d5b]" />,
+    icon: <GraduationCap className="w-5 h-5 text-[#2E1A4A]" />,
     endpoint: '/api/sync/teachers',
     requiresSchoolId: false,
     hidden: true,  // 隐藏教师同步
@@ -65,7 +65,7 @@ const SYNC_ITEMS: SyncItem[] = [
     key: 'courses',
     name: 'Courses',
     description: 'Sync course definitions',
-    icon: <BookOpen className="w-5 h-5 text-[#6b2d5b]" />,
+    icon: <BookOpen className="w-5 h-5 text-[#2E1A4A]" />,
     endpoint: '/api/sync/courses',
     requiresSchoolId: false,
     hidden: true,  // 隐藏课程同步
@@ -74,7 +74,7 @@ const SYNC_ITEMS: SyncItem[] = [
     key: 'standards',
     name: 'Standards',
     description: 'Sync subject standards',
-    icon: <ClipboardList className="w-5 h-5 text-[#6b2d5b]" />,
+    icon: <ClipboardList className="w-5 h-5 text-[#2E1A4A]" />,
     endpoint: '/api/sync/standards',
     requiresSchoolId: false,
     hidden: true,  // 隐藏标准同步
@@ -83,7 +83,7 @@ const SYNC_ITEMS: SyncItem[] = [
     key: 'attendance-codes',
     name: 'Attendance Codes',
     description: 'Sync attendance codes',
-    icon: <ClipboardCheck className="w-5 h-5 text-[#6b2d5b]" />,
+    icon: <ClipboardCheck className="w-5 h-5 text-[#2E1A4A]" />,
     endpoint: '/api/sync/attendance-codes',
     requiresSchoolId: false,
     hidden: true,  // 隐藏考勤代码同步
@@ -92,7 +92,7 @@ const SYNC_ITEMS: SyncItem[] = [
     key: 'persons',
     name: 'Persons',
     description: 'Sync contact persons',
-    icon: <UserCircle className="w-5 h-5 text-[#6b2d5b]" />,
+    icon: <UserCircle className="w-5 h-5 text-[#2E1A4A]" />,
     endpoint: '/api/sync/persons',
     requiresSchoolId: false,
   },
@@ -100,7 +100,7 @@ const SYNC_ITEMS: SyncItem[] = [
     key: 'email-addresses',
     name: 'Emails',
     description: 'Sync email addresses',
-    icon: <Mail className="w-5 h-5 text-[#6b2d5b]" />,
+    icon: <Mail className="w-5 h-5 text-[#2E1A4A]" />,
     endpoint: '/api/sync/email-addresses',
     requiresSchoolId: false,
   },
@@ -108,7 +108,7 @@ const SYNC_ITEMS: SyncItem[] = [
     key: 'person-email-assocs',
     name: 'Person-Email',
     description: 'Link persons to emails',
-    icon: <Link2 className="w-5 h-5 text-[#6b2d5b]" />,
+    icon: <Link2 className="w-5 h-5 text-[#2E1A4A]" />,
     endpoint: '/api/sync/person-email-assocs',
     requiresSchoolId: false,
   },
@@ -116,7 +116,7 @@ const SYNC_ITEMS: SyncItem[] = [
     key: 'students',
     name: 'Students',
     description: 'Sync student data',
-    icon: <Users className="w-5 h-5 text-[#6b2d5b]" />,
+    icon: <Users className="w-5 h-5 text-[#2E1A4A]" />,
     endpoint: '/api/sync/students',
     requiresSchoolId: false,  // 不再需要 schoolId，获取所有学生
   },
@@ -124,7 +124,7 @@ const SYNC_ITEMS: SyncItem[] = [
     key: 'student-contacts',
     name: 'Student Contacts',
     description: 'Link students to contacts',
-    icon: <Users className="w-5 h-5 text-[#6b2d5b]" />,
+    icon: <Users className="w-5 h-5 text-[#2E1A4A]" />,
     endpoint: '/api/sync/student-contacts',
     requiresSchoolId: false,
   },
@@ -134,10 +134,14 @@ export function PowerSchoolSettings({ settings, onChange }: PowerSchoolSettingsP
   const [showSecret, setShowSecret] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isFetchingToken, setIsFetchingToken] = useState(false);
+  const [isRefreshingToken, setIsRefreshingToken] = useState(false);
+  const [isResettingReports, setIsResettingReports] = useState(false);
   const [tokenResult, setTokenResult] = useState<'success' | 'error' | null>(null);
   const [tokenError, setTokenError] = useState<string | null>(null);
   const [saveResult, setSaveResult] = useState<'success' | 'error' | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [resetResult, setResetResult] = useState<'success' | 'error' | null>(null);
+  const [resetMessage, setResetMessage] = useState<string | null>(null);
   
   // 学校列表和当前选择的学校
   const [schools, setSchools] = useState<School[]>([]);
@@ -305,6 +309,76 @@ export function PowerSchoolSettings({ settings, onChange }: PowerSchoolSettingsP
     setTokenError(null);
   };
 
+  // 从数据库凭据刷新 Token
+  const handleRefreshTokenFromDb = async () => {
+    setIsRefreshingToken(true);
+    setTokenResult(null);
+    setTokenError(null);
+
+    try {
+      const response = await fetch('/api/powerschool/token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          refreshFromDb: true,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.access_token) {
+        onChange({
+          ...settings,
+          accessToken: data.access_token,
+          tokenExpiresAt: data.expires_at,
+        });
+        setTokenResult('success');
+      } else {
+        setTokenResult('error');
+        setTokenError(data.error || 'Failed to refresh token');
+      }
+    } catch (error) {
+      setTokenResult('error');
+      setTokenError(error instanceof Error ? error.message : 'Network error');
+    } finally {
+      setIsRefreshingToken(false);
+    }
+  };
+
+  // 重置所有报告状态
+  const handleResetAllReports = async () => {
+    if (!confirm('Are you sure you want to reset all student report statuses? This will clear PDF generated and email sent flags for all students.')) {
+      return;
+    }
+
+    setIsResettingReports(true);
+    setResetResult(null);
+    setResetMessage(null);
+
+    try {
+      const response = await fetch('/api/report/reset-all', {
+        method: 'POST',
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setResetResult('success');
+        setResetMessage(data.message);
+      } else {
+        setResetResult('error');
+        setResetMessage(data.error || 'Failed to reset report statuses');
+      }
+    } catch (error) {
+      setResetResult('error');
+      setResetMessage(error instanceof Error ? error.message : 'Network error');
+    } finally {
+      setIsResettingReports(false);
+    }
+  };
+
   const formatExpiresAt = (expiresAt?: string) => {
     if (!expiresAt) return null;
     const date = new Date(expiresAt);
@@ -449,7 +523,7 @@ export function PowerSchoolSettings({ settings, onChange }: PowerSchoolSettingsP
             onChange={(e) => handleChange('enabled', e.target.checked)}
             className="sr-only peer"
           />
-          <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#6b2d5b]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#6b2d5b]"></div>
+          <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#2E1A4A]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#2E1A4A]"></div>
         </label>
       </div>
 
@@ -481,7 +555,7 @@ export function PowerSchoolSettings({ settings, onChange }: PowerSchoolSettingsP
               placeholder="Enter your Client Secret"
               value={settings.clientSecret}
               onChange={(e) => handleChange('clientSecret', e.target.value)}
-              className="block w-full rounded-lg border border-slate-300 pl-4 pr-12 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#8b3d75] focus:border-transparent"
+              className="block w-full rounded-lg border border-slate-300 pl-4 pr-12 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#3d2563] focus:border-transparent"
             />
             <button
               type="button"
@@ -579,14 +653,24 @@ export function PowerSchoolSettings({ settings, onChange }: PowerSchoolSettingsP
           )}
         </div>
 
-        <Button
-          variant="outline"
-          onClick={handleFetchToken}
-          disabled={isFetchingToken || !settings.endpoint || !settings.clientId || !settings.clientSecret}
-          leftIcon={isFetchingToken ? <Loader2 className="w-4 h-4 animate-spin" /> : <Key className="w-4 h-4" />}
-        >
-          {isFetchingToken ? 'Fetching...' : settings.accessToken ? 'Refresh Token' : 'Get Access Token'}
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            onClick={handleFetchToken}
+            disabled={isFetchingToken || !settings.endpoint || !settings.clientId || !settings.clientSecret}
+            leftIcon={isFetchingToken ? <Loader2 className="w-4 h-4 animate-spin" /> : <Key className="w-4 h-4" />}
+          >
+            {isFetchingToken ? 'Fetching...' : settings.accessToken ? 'Refresh Token' : 'Get Access Token'}
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={handleRefreshTokenFromDb}
+            disabled={isRefreshingToken}
+            leftIcon={isRefreshingToken ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+          >
+            {isRefreshingToken ? 'Refreshing...' : 'Refresh from DB'}
+          </Button>
+        </div>
       </div>
 
       {/* Token 获取结果 */}
@@ -650,7 +734,7 @@ export function PowerSchoolSettings({ settings, onChange }: PowerSchoolSettingsP
             ) : schools.length > 0 ? (
               <div className="flex items-center gap-3">
                 <select
-                  className="flex-1 px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#8b3d75] focus:border-transparent"
+                  className="flex-1 px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#3d2563] focus:border-transparent"
                   value={selectedSchool?.id || ''}
                   onChange={(e) => handleSchoolSelect(e.target.value)}
                 >
@@ -702,7 +786,7 @@ export function PowerSchoolSettings({ settings, onChange }: PowerSchoolSettingsP
             const canSyncThis = item.requiresSchoolId ? canSyncWithSchool : canSync;
             
             return (
-              <div key={item.key} className="p-4 border border-slate-200 rounded-lg hover:border-[#8b3d75] transition-colors">
+              <div key={item.key} className="p-4 border border-slate-200 rounded-lg hover:border-[#3d2563] transition-colors">
                 <div className="flex items-center gap-2 mb-2">
                   {item.icon}
                   <span className="font-medium text-slate-900">{item.name}</span>
@@ -746,10 +830,47 @@ export function PowerSchoolSettings({ settings, onChange }: PowerSchoolSettingsP
         </div>
       </div>
 
+      {/* 报告状态管理 */}
+      <div className="pt-4 border-t border-slate-200">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h4 className="font-medium text-slate-900">Report Status Management</h4>
+            <p className="text-sm text-slate-500">Reset all student report statuses to pending</p>
+          </div>
+          <Button
+            variant="outline"
+            onClick={handleResetAllReports}
+            disabled={isResettingReports}
+            leftIcon={isResettingReports ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
+            className="border-amber-300 text-amber-700 hover:bg-amber-50"
+          >
+            {isResettingReports ? 'Resetting...' : 'Reset All Reports'}
+          </Button>
+        </div>
+
+        {resetResult && (
+          <div className={`flex items-center gap-2 p-3 rounded-lg ${
+            resetResult === 'success' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'
+          }`}>
+            {resetResult === 'success' ? (
+              <>
+                <CheckCircle className="w-5 h-5" />
+                <span>{resetMessage}</span>
+              </>
+            ) : (
+              <>
+                <XCircle className="w-5 h-5" />
+                <span>Failed: {resetMessage}</span>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+
       {/* 帮助信息 */}
-      <div className="p-4 bg-[#faf5f9] rounded-lg border border-[#ebd5e7]">
-        <h4 className="font-medium text-[#6b2d5b] mb-2">Setup Instructions</h4>
-        <ol className="text-sm text-[#5a274c] space-y-1 list-decimal list-inside">
+      <div className="p-4 bg-[#f5f3f7] rounded-lg border border-[#d7cfdf]">
+        <h4 className="font-medium text-[#2E1A4A] mb-2">Setup Instructions</h4>
+        <ol className="text-sm text-[#545860] space-y-1 list-decimal list-inside">
           <li>Login to PowerSchool as an administrator</li>
           <li>Go to System &gt; System Settings &gt; Plugin Management Configuration</li>
           <li>Install and enable the data access plugin</li>

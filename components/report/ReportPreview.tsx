@@ -305,8 +305,8 @@ export function ReportPreview({ reportData }: ReportPreviewProps) {
             className="bg-white shadow-xl rounded-lg overflow-hidden print:shadow-none print:rounded-none"
           >
             <div className="p-8 print:p-6">
-              {/* 页眉 - 学校信息 */}
-              <ReportHeader schoolInfo={reportData.schoolInfo} />
+              {/* 页眉 - 使用官方信头 */}
+              <ReportHeader />
 
               {/* 学生基本信息 */}
               <StudentInfo
@@ -324,11 +324,10 @@ export function ReportPreview({ reportData }: ReportPreviewProps) {
               {/* 学科评价 */}
               <SubjectGrades grades={reportData.grades} />
 
-              {/* 页脚 - 签名 */}
+              {/* 页脚 - 签名和联系信息 */}
               <ReportFooter
-                schoolInfo={reportData.schoolInfo}
                 signature={reportData.signature}
-                generatedAt={reportData.generatedAt}
+                showSignature={true}
               />
             </div>
           </div>

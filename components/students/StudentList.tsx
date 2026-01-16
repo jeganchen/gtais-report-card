@@ -223,8 +223,8 @@ export function StudentList() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white rounded-xl border border-slate-200 p-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-[#f5eaf3] rounded-lg">
-              <FileText className="w-5 h-5 text-[#6b2d5b]" />
+            <div className="p-2 bg-[#f5f3f7] rounded-lg">
+              <FileText className="w-5 h-5 text-[#2E1A4A]" />
             </div>
             <div>
               <p className="text-2xl font-bold text-slate-900">{stats.total}</p>
@@ -267,7 +267,7 @@ export function StudentList() {
             placeholder="Search by name or student number..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#8b3d75] focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#3d2563] focus:border-transparent"
           />
         </div>
 
@@ -277,7 +277,7 @@ export function StudentList() {
           <select
             value={gradeFilter ?? ''}
             onChange={(e) => setGradeFilter(e.target.value ? Number(e.target.value) : null)}
-            className="px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#8b3d75]"
+            className="px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#3d2563]"
           >
             <option value="">All Grades</option>
             {grades.map((grade) => (
@@ -340,7 +340,7 @@ export function StudentList() {
                     onClick={() => handlePageChange(pageNum)}
                     className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
                       currentPage === pageNum
-                        ? 'bg-[#6b2d5b] text-white'
+                        ? 'bg-[#2E1A4A] text-white'
                         : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                     }`}
                   >

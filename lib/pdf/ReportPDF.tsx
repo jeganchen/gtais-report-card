@@ -37,38 +37,46 @@ Font.register({
 // 禁用连字符（避免中文换行问题）
 Font.registerHyphenationCallback((word) => [word]);
 
-// 定义主题色
+// 定义主题色 - 基于 GTAIS 官方色卡
 const colors = {
-  primary: '#6b2d5b',
-  primaryLight: '#8b3d75',
-  primaryBg: '#f5eaf3',
-  primaryBorder: '#dbb3d3',
+  primary: '#2E1A4A',         // 深紫色 - 主色
+  primaryLight: '#3d2563',    // 主色浅
+  primaryBg: '#f5f3f7',       // 主色背景
+  primaryBorder: '#d7cfdf',   // 主色边框
+  accent: '#ED8C00',          // 橙色 - 强调色
   white: '#ffffff',
-  gray: '#64748b',
-  darkGray: '#334155',
-  lightGray: '#f1f5f9',
-  emerald: '#059669',
+  gray: '#545860',            // 深灰
+  darkGray: '#2C2A29',        // 黑色
+  lightGray: '#D9DAE4',       // 浅灰
+  emerald: '#059669',         // 成功绿
   emeraldBg: '#d1fae5',
-  amber: '#d97706',
+  amber: '#d97706',           // 警告橙
   amberBg: '#fef3c7',
-  red: '#dc2626',
+  red: '#dc2626',             // 错误红
   redBg: '#fee2e2',
 };
+
+// 页眉图片路径 (基于 AIS Letter Head 模板)
+const headerImagePath = path.join(process.cwd(), 'public', 'letterhead-header.png');
 
 // 定义样式
 const styles = StyleSheet.create({
   page: {
-    padding: 40,
+    paddingTop: 20,
+    paddingBottom: 60,
+    paddingHorizontal: 40,
     fontSize: 10,
     fontFamily: 'SourceHanSans',
     backgroundColor: colors.white,
   },
-  // Header styles
+  // Header styles - 使用官方信头图片
   headerWrapper: {
-    paddingBottom: 10,
-    borderBottomWidth: 2,
-    borderBottomColor: colors.primary,
     marginBottom: 15,
+  },
+  headerImage: {
+    width: '100%',
+    height: 'auto',
+    marginBottom: 8,
   },
   header: {
     flexDirection: 'row',
@@ -97,10 +105,13 @@ const styles = StyleSheet.create({
   reportTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#2d1226',
+    color: colors.primary,
     textAlign: 'center',
     marginTop: 8,
     marginBottom: 0,
+    borderBottomWidth: 2,
+    borderBottomColor: colors.accent,
+    paddingBottom: 8,
   },
   // Student info styles
   studentInfo: {
@@ -139,10 +150,10 @@ const styles = StyleSheet.create({
   tableRow: {
     flexDirection: 'row',
     borderBottomWidth: 1,
-    borderBottomColor: '#ebd5e7',
+    borderBottomColor: '#d7cfdf',
   },
   tableRowAlt: {
-    backgroundColor: '#faf5f9',
+    backgroundColor: '#f5f3f7',
   },
   tableCell: {
     padding: 6,
@@ -171,7 +182,7 @@ const styles = StyleSheet.create({
   },
   attendanceLabelCell: {
     width: 280,
-    backgroundColor: '#faf5f9',
+    backgroundColor: '#f5f3f7',
   },
   // Assessment key styles
   assessmentKey: {
@@ -180,7 +191,7 @@ const styles = StyleSheet.create({
   assessmentRow: {
     flexDirection: 'row',
     borderBottomWidth: 1,
-    borderBottomColor: '#ebd5e7',
+    borderBottomColor: '#d7cfdf',
   },
   assessmentScore: {
     width: 30,
@@ -200,7 +211,7 @@ const styles = StyleSheet.create({
   },
   assessmentLabel: {
     fontWeight: 'bold',
-    color: '#5a274c',
+    color: '#545860',
   },
   // Subject grades styles
   subjectTable: {
@@ -229,53 +240,39 @@ const styles = StyleSheet.create({
     fontSize: 8,
     color: colors.darkGray,
     borderRightWidth: 1,
-    borderRightColor: '#ebd5e7',
+    borderRightColor: '#d7cfdf',
   },
   scoreCell: {
     width: 35,
     padding: 4,
     textAlign: 'center',
     borderRightWidth: 1,
-    borderRightColor: '#ebd5e7',
+    borderRightColor: '#d7cfdf',
   },
-  // Score badge styles
+  // Score badge styles - 统一使用默认样式，不区分颜色
   scoreBadge: {
     fontSize: 8,
     fontWeight: 'bold',
     padding: 2,
     borderRadius: 2,
     textAlign: 'center',
-  },
-  scoreE: {
-    backgroundColor: colors.emeraldBg,
-    color: colors.emerald,
-  },
-  scoreP: {
-    backgroundColor: colors.primaryBg,
     color: colors.primary,
   },
-  scoreA: {
-    backgroundColor: colors.amberBg,
-    color: colors.amber,
-  },
-  scoreN: {
-    backgroundColor: colors.redBg,
-    color: colors.red,
-  },
-  scoreDash: {
-    backgroundColor: colors.lightGray,
-    color: colors.gray,
-  },
-  // Footer styles
-  footer: {
-    marginTop: 20,
-    paddingTop: 15,
-    borderTopWidth: 2,
-    borderTopColor: colors.primary,
+  // 签名区域样式 - 仅在最后显示
+  signatureSection: {
+    marginTop: 30,
+    marginBottom: 60,  // 留出页脚空间
   },
   signatureArea: {
     alignItems: 'flex-end',
     marginBottom: 15,
+  },
+  // Footer styles - 基于 AIS Letter Head 模板 (每页固定显示)
+  footer: {
+    position: 'absolute',
+    bottom: 20,
+    left: 40,
+    right: 40,
   },
   signatureBox: {
     width: 180,
@@ -302,45 +299,41 @@ const styles = StyleSheet.create({
     fontSize: 9,
     color: colors.primary,
   },
-  schoolContact: {
+  // 官方信头页脚样式
+  footerContact: {
     textAlign: 'center',
+    borderTopWidth: 1,
+    borderTopColor: colors.accent,
+    paddingTop: 8,
+  },
+  footerLine1: {
+    fontSize: 9,
+    color: colors.primary,
+    marginBottom: 2,
+  },
+  footerLine2: {
+    fontSize: 9,
+    color: colors.primary,
+    marginBottom: 2,
+  },
+  footerLine3: {
     fontSize: 8,
-    color: colors.primaryLight,
+    color: colors.primary,
   },
 });
 
-// Score badge 样式映射
-const getScoreStyle = (score: ScoreLevel) => {
-  switch (score) {
-    case 'E':
-      return styles.scoreE;
-    case 'P':
-      return styles.scoreP;
-    case 'A':
-      return styles.scoreA;
-    case 'N':
-      return styles.scoreN;
-    default:
-      return styles.scoreDash;
-  }
-};
 
 interface ReportPDFProps {
   data: ReportData;
-  logoUrl?: string;  // Base64编码的logo图片或远程URL
 }
 
-export function ReportPDF({ data, logoUrl }: ReportPDFProps) {
+export function ReportPDF({ data }: ReportPDFProps) {
   const { student, schoolYear, schoolInfo, attendance, grades, signature } = data;
 
-  const currentDate = new Date().toLocaleString('en-US', {
+  const currentDate = new Date().toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'numeric',
     day: 'numeric',
-    hour: 'numeric',
-    minute: 'numeric',
-    second: 'numeric',
-    hour12: true,
   });
 
   const principalName = signature?.principalName || schoolInfo.principalName || '';
@@ -351,18 +344,9 @@ export function ReportPDF({ data, logoUrl }: ReportPDFProps) {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        {/* Header */}
-        <View style={styles.headerWrapper}>
-          <View style={styles.header}>
-            {logoUrl && <Image src={logoUrl} style={styles.logo} />}
-            <View style={styles.schoolName}>
-              <Text style={styles.schoolTitle}>GTIIT AFFILIATED</Text>
-              <Text style={styles.schoolTitle}>INTERNATIONAL SCHOOL</Text>
-              {schoolInfo.nameChinese && (
-                <Text style={styles.schoolTitleChinese}>{schoolInfo.nameChinese}</Text>
-              )}
-            </View>
-          </View>
+        {/* Header - 使用官方信头图片 */}
+        <View style={styles.headerWrapper} fixed>
+          <Image src={headerImagePath} style={styles.headerImage} />
           <Text style={styles.reportTitle}>Student Progress Report</Text>
         </View>
 
@@ -505,7 +489,7 @@ export function ReportPDF({ data, logoUrl }: ReportPDFProps) {
                       ...(i === standard.quarterScores.length - 1 ? [styles.tableCellLast] : []),
                     ]}
                   >
-                    <Text style={[styles.scoreBadge, getScoreStyle(qs.score)]}>{qs.score}</Text>
+                    <Text style={styles.scoreBadge}>{qs.score}</Text>
                   </View>
                 ))}
               </View>
@@ -513,8 +497,8 @@ export function ReportPDF({ data, logoUrl }: ReportPDFProps) {
           </View>
         ))}
 
-        {/* Footer */}
-        <View style={styles.footer}>
+        {/* 签名区域 - 仅在内容末尾显示一次 */}
+        <View style={styles.signatureSection} wrap={false}>
           <View style={styles.signatureArea}>
             <View style={styles.signatureBox}>
               {signature?.signatureImageUrl ? (
@@ -526,12 +510,14 @@ export function ReportPDF({ data, logoUrl }: ReportPDFProps) {
               <Text style={styles.signatureTitle}>{principalTitle}</Text>
             </View>
           </View>
-          <View style={styles.schoolContact}>
-            <Text>{schoolInfo.address}</Text>
-            <Text>
-              Tel: {schoolInfo.phone} | Email: {schoolInfo.email}
-            </Text>
-            {schoolInfo.website && <Text>{schoolInfo.website}</Text>}
+        </View>
+
+        {/* 固定页脚 - 学校联系信息 (每页都显示) */}
+        <View style={styles.footer} fixed>
+          <View style={styles.footerContact}>
+            <Text style={styles.footerLine1}>www.gtais.org   |   [86] 754 - 8678 7111</Text>
+            <Text style={styles.footerLine2}>No.66, Guangyi Road, Jinping District, Shantou, Guangdong</Text>
+            <Text style={styles.footerLine3}>广东省汕头市金平区广以路66号</Text>
           </View>
         </View>
       </Page>

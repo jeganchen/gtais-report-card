@@ -17,10 +17,10 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-40 w-64 bg-[#2d1226] hidden lg:block">
+    <aside className="fixed inset-y-0 left-0 z-40 w-64 bg-[#2E1A4A] hidden lg:block">
       <div className="flex flex-col h-full">
         {/* Logo */}
-        <div className="flex items-center gap-3 px-4 py-4 border-b border-[#4c2341]">
+        <div className="flex items-center gap-3 px-4 py-4 border-b border-[#3d2563]">
           <div className="flex items-center justify-center w-10 h-10 bg-white rounded-lg overflow-hidden">
             <Image
               src="/GTAIS.png"
@@ -36,7 +36,7 @@ export function Sidebar() {
           </div>
           <div className="flex-1 min-w-0">
             <h1 className="text-sm font-bold text-white truncate">GTIIT School</h1>
-            <p className="text-xs text-[#dbb3d3] truncate">Report Card System</p>
+            <p className="text-xs text-[#A7A9B4] truncate">Report Card System</p>
           </div>
         </div>
 
@@ -53,8 +53,8 @@ export function Sidebar() {
                   transition-all duration-200
                   ${
                     isActive
-                      ? 'bg-[#6b2d5b] text-white shadow-lg shadow-[#6b2d5b]/30'
-                      : 'text-[#dbb3d3] hover:bg-[#4c2341] hover:text-white'
+                      ? 'bg-[#2E1A4A] text-white shadow-lg shadow-[#2E1A4A]/30'
+                      : 'text-[#A7A9B4] hover:bg-[#3d2563] hover:text-white'
                   }
                 `}
               >
@@ -66,11 +66,11 @@ export function Sidebar() {
         </nav>
 
         {/* 底部信息 */}
-        <div className="px-4 py-4 border-t border-[#4c2341]">
-          <p className="text-xs text-[#8b3d75]">
+        <div className="px-4 py-4 border-t border-[#3d2563]">
+          <p className="text-xs text-[#3d2563]">
             © 2025 GTIIT Affiliated
           </p>
-          <p className="text-xs text-[#8b3d75]">
+          <p className="text-xs text-[#3d2563]">
             International School
           </p>
         </div>

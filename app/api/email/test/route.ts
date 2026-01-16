@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
       text: 'This is a test email from the Report Card System. If you received this email, your SMTP configuration is working correctly.',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #6b2d5b;">Test Email</h2>
+          <h2 style="color: #2E1A4A;">Test Email</h2>
           <p>This is a test email from the <strong>Report Card System</strong>.</p>
           <p>If you received this email, your SMTP configuration is working correctly.</p>
           <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">

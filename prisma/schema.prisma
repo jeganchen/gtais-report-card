@@ -206,6 +206,10 @@ model Student {
   pdfGeneratedAt  DateTime? @map("pdf_generated_at")
   pdfUrl          String?   @map("pdf_url") @db.VarChar(500)
   
+  // 邮件发送状态
+  emailSent       Boolean   @default(false) @map("email_sent")
+  emailSentAt     DateTime? @map("email_sent_at")
+  
   // 关联关系
   enrollments     StudentEnrollment[]
   storedGrades    StoredGrade[]

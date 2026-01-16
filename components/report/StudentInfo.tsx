@@ -10,14 +10,10 @@ interface StudentInfoProps {
 }
 
 export function StudentInfo({ student, schoolYear, generatedDate }: StudentInfoProps) {
-  const currentDate = generatedDate || new Date().toLocaleString('en-US', {
+  const currentDate = generatedDate || new Date().toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'numeric',
     day: 'numeric',
-    hour: 'numeric',
-    minute: 'numeric',
-    second: 'numeric',
-    hour12: true,
   });
 
   return (

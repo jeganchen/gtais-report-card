@@ -133,12 +133,12 @@ export function BatchActions({ selectedCount, students }: BatchActionsProps) {
 
   return (
     <>
-      <div className="flex items-center justify-between p-4 bg-[#f5eaf3] border border-[#dbb3d3] rounded-xl">
+      <div className="flex items-center justify-between p-4 bg-[#f5f3f7] border border-[#d7cfdf] rounded-xl">
         <div className="flex items-center gap-4">
-          <span className="text-sm font-medium text-[#5a274c]">
+          <span className="text-sm font-medium text-[#545860]">
             {selectedCount} student{selectedCount > 1 ? 's' : ''} selected
           </span>
-          <div className="flex items-center gap-2 text-xs text-[#8b3d75]">
+          <div className="flex items-center gap-2 text-xs text-[#3d2563]">
             {pdfReadyCount > 0 && (
               <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full">
                 {pdfReadyCount} PDF ready

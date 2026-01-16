@@ -32,13 +32,13 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     // 使用GTIIT紫色主题
     const variants = {
       primary:
-        'bg-[#6b2d5b] text-white hover:bg-[#5a274c] focus:ring-[#8b3d75] shadow-sm',
+        'bg-[#2E1A4A] text-white hover:bg-[#3d2563] focus:ring-[#3d2563] shadow-sm',
       secondary:
-        'bg-[#f5eaf3] text-[#6b2d5b] hover:bg-[#ebd5e7] focus:ring-[#8b3d75]',
+        'bg-[#f5f3f7] text-[#2E1A4A] hover:bg-[#d7cfdf] focus:ring-[#3d2563]',
       outline:
-        'border-2 border-[#dbb3d3] text-[#6b2d5b] hover:bg-[#faf5f9] focus:ring-[#8b3d75]',
+        'border-2 border-[#d7cfdf] text-[#2E1A4A] hover:bg-[#f5f3f7] focus:ring-[#3d2563]',
       ghost:
-        'text-[#6b2d5b] hover:bg-[#f5eaf3] hover:text-[#5a274c] focus:ring-[#8b3d75]',
+        'text-[#2E1A4A] hover:bg-[#f5f3f7] hover:text-[#3d2563] focus:ring-[#3d2563]',
       danger:
         'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 shadow-sm',
     };
