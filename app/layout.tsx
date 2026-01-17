@@ -1,24 +1,11 @@
 /**
  * 根布局
+ * 使用系统字体以避免 Google Fonts 访问问题
  */
 
 import type { Metadata } from 'next';
-import { Inter, Noto_Sans_SC } from 'next/font/google';
 import { SessionProvider } from '@/components/providers/SessionProvider';
 import './globals.css';
-
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
-  display: 'swap',
-});
-
-const notoSansSC = Noto_Sans_SC({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-noto-sans-sc',
-  display: 'swap',
-});
 
 export const metadata: Metadata = {
   title: 'PS Report Card',
@@ -34,7 +21,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${notoSansSC.variable}`}>
+    <html lang="en">
       <body className="font-sans antialiased">
         <SessionProvider>
           {children}
