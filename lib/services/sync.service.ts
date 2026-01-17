@@ -33,7 +33,12 @@ export class SyncService {
     }
     
     this.endpoint = config.endpoint.replace(/\/+$/, '');
-    this.schoolId = config.schoolId;
+    
+    // 从数据库获取第一个学校的 psId 作为默认 schoolId
+    const schools = await schoolRepository.findAll();
+    if (schools.length > 0) {
+      this.schoolId = schools[0].psId;
+    }
   }
 
   /**
@@ -439,7 +444,7 @@ export class SyncService {
           city: student.city || undefined,
           homePhone: student.home_phone || undefined,
           guardianEmail: student.guardianemail || undefined,
-          schoolId: school!.id,
+          schoolId: school!.psId,
         };
       });
       
@@ -754,12 +759,13 @@ export class SyncService {
    */
   async getConfigStatus() {
     const config = await settingsRepository.getPowerSchoolConfig();
+    const schools = await schoolRepository.findAll();
     
     return {
       isConfigured: !!(config.endpoint && config.clientId && config.clientSecret),
       hasToken: !!config.accessToken,
       tokenExpired: config.tokenExpiresAt ? new Date(config.tokenExpiresAt) < new Date() : true,
-      schoolId: config.schoolId,
+      schoolId: schools.length > 0 ? schools[0].psId : null,
     };
   }
 }

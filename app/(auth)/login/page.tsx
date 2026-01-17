@@ -2,13 +2,24 @@
  * 登录页面 - GTIIT主题
  */
 
+import { Suspense } from 'react';
 import Image from 'next/image';
 import { LoginForm } from '@/components/auth/LoginForm';
+import { Loader2 } from 'lucide-react';
 
 export const metadata = {
   title: 'Login - GTIIT Report Card',
   description: 'Sign in to access GTIIT Affiliated International School Report Card System',
 };
+
+// Loading fallback for LoginForm
+function LoginFormFallback() {
+  return (
+    <div className="flex items-center justify-center py-8">
+      <Loader2 className="w-6 h-6 animate-spin text-white" />
+    </div>
+  );
+}
 
 export default function LoginPage() {
   return (
@@ -48,9 +59,11 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* 登录表单 */}
+        {/* 登录表单 - 使用 Suspense 包裹以支持 useSearchParams */}
         <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl p-8">
-          <LoginForm />
+          <Suspense fallback={<LoginFormFallback />}>
+            <LoginForm />
+          </Suspense>
         </div>
 
         {/* 底部信息 */}
