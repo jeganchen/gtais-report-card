@@ -121,14 +121,13 @@ const providers = [
     },
   }),
   // 只有当 Azure AD 配置完整时才添加 MicrosoftEntraID provider
-  // 关键：必须提供 tenantId，否则会使用 /common 端点导致单租户应用报错
+  // 关键：必须提供 issuer 来指定租户，否则会使用 /common 端点导致单租户应用报错
   ...(hasAzureConfig
     ? [
         MicrosoftEntraID({
           clientId: azureConfig.clientId!,
           clientSecret: azureConfig.clientSecret!,
-          tenantId: azureConfig.tenantId!,
-          // 显式设置 issuer 以确保使用租户特定端点
+          // 通过 issuer 指定租户（tenantId 已被移除，改用 issuer）
           issuer: `https://login.microsoftonline.com/${azureConfig.tenantId}/v2.0`,
           authorization: {
             params: {
