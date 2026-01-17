@@ -223,8 +223,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
       // 不影响 PDF 返回，继续执行
     }
 
-    // 返回PDF文件
-    return new NextResponse(pdfBuffer, {
+    // 返回PDF文件 - 将 Buffer 转换为 Uint8Array 以兼容 NextResponse
+    return new NextResponse(new Uint8Array(pdfBuffer), {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
