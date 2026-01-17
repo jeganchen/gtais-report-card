@@ -11,8 +11,8 @@ import { z } from 'zod';
 import { userRepository } from '@/lib/database/repositories';
 import { getAzureADConfig } from '@/lib/azure-config';
 
-// 是否使用数据库验证
-const USE_DATABASE = process.env.USE_DATABASE === 'true';
+// 环境检测
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 
 // 登录表单验证schema
 const loginSchema = z.object({
@@ -20,43 +20,29 @@ const loginSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
-// 模拟用户数据（仅在未启用数据库时使用）
-const mockUsers = [
-  {
-    id: '1',
-    email: 'admin@school.edu',
-    password: 'admin123',
-    name: 'Admin User',
-    role: 'admin',
-  },
-  {
-    id: '2',
-    email: 'teacher@school.edu',
-    password: 'teacher123',
-    name: 'Teacher User',
-    role: 'teacher',
-  },
-];
-
 // 使用 top-level await 预加载数据库配置
 // 这确保在 NextAuth 初始化前，配置已从数据库加载
 const azureConfig = await getAzureADConfig();
 
-console.log('[Auth] Azure AD Config loaded:', {
-  hasClientId: !!azureConfig.clientId,
-  hasClientSecret: !!azureConfig.clientSecret,
-  hasTenantId: !!azureConfig.tenantId,
-  enabled: azureConfig.enabled,
-  tenantId: azureConfig.tenantId ? `${azureConfig.tenantId.substring(0, 8)}...` : 'not set',
-});
+// 仅在开发环境输出配置状态（不输出敏感信息）
+if (!IS_PRODUCTION) {
+  console.log('[Auth] Azure AD Config loaded:', {
+    hasClientId: !!azureConfig.clientId,
+    hasClientSecret: !!azureConfig.clientSecret,
+    hasTenantId: !!azureConfig.tenantId,
+    enabled: azureConfig.enabled,
+  });
+}
 
 // 检查是否有完整的 Azure AD 配置
 const hasAzureConfig = !!(azureConfig.clientId && azureConfig.clientSecret && azureConfig.tenantId);
 
-if (hasAzureConfig) {
-  console.log('[Auth] MicrosoftEntraID provider will be added with tenant:', azureConfig.tenantId!.substring(0, 8) + '...');
-} else {
-  console.log('[Auth] MicrosoftEntraID provider NOT added - missing config');
+if (!IS_PRODUCTION) {
+  if (hasAzureConfig) {
+    console.log('[Auth] MicrosoftEntraID provider enabled');
+  } else {
+    console.log('[Auth] MicrosoftEntraID provider NOT added - missing config');
+  }
 }
 
 // 构建 providers 数组 - 使用条件表达式避免类型推断问题
@@ -72,50 +58,38 @@ const providers = [
       try {
         const { email, password } = loginSchema.parse(credentials);
 
-        if (USE_DATABASE) {
-          // 数据库验证
-          const user = await userRepository.findByEmail(email);
-          
-          if (!user || !user.isActive) {
-            console.log('User not found or inactive:', email);
-            return null;
+        // 数据库验证 - 生产环境必须使用数据库
+        const user = await userRepository.findByEmail(email);
+        
+        if (!user || !user.isActive) {
+          if (!IS_PRODUCTION) {
+            console.log('[Auth] User not found or inactive:', email);
           }
-
-          // 验证密码
-          const isValid = await userRepository.verifyPassword(email, password);
-          if (!isValid) {
-            console.log('Invalid password for:', email);
-            return null;
-          }
-
-          // 更新最后登录时间
-          await userRepository.updateLastLogin(email);
-
-          return {
-            id: user.email,
-            email: user.email,
-            name: user.name || user.email,
-            role: user.role,
-          };
-        } else {
-          // Mock验证
-          const user = mockUsers.find(
-            (u) => u.email === email && u.password === password
-          );
-
-          if (!user) {
-            return null;
-          }
-
-          return {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            role: user.role,
-          };
+          return null;
         }
+
+        // 验证密码
+        const isValid = await userRepository.verifyPassword(email, password);
+        if (!isValid) {
+          if (!IS_PRODUCTION) {
+            console.log('[Auth] Invalid password for:', email);
+          }
+          return null;
+        }
+
+        // 更新最后登录时间
+        await userRepository.updateLastLogin(email);
+
+        return {
+          id: user.email,
+          email: user.email,
+          name: user.name || user.email,
+          role: user.role,
+        };
       } catch (error) {
-        console.error('Authorization error:', error);
+        if (!IS_PRODUCTION) {
+          console.error('[Auth] Authorization error:', error);
+        }
         return null;
       }
     },
@@ -163,41 +137,46 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         // 先检查 Azure AD 是否启用
         const config = await getAzureADConfig();
         if (!config.enabled) {
-          console.log('Office 365 login is disabled');
+          if (!IS_PRODUCTION) {
+            console.log('[Auth] Office 365 login is disabled');
+          }
           return '/login?error=O365Disabled';
         }
 
         if (!user.email) {
-          console.log('Office 365 login failed: no email');
+          if (!IS_PRODUCTION) {
+            console.log('[Auth] Office 365 login failed: no email');
+          }
           return false;
         }
 
-        if (USE_DATABASE) {
-          try {
-            const dbUser = await userRepository.findByEmail(user.email);
-            
-            if (!dbUser) {
-              console.log('Office 365 user not found in database:', user.email);
-              return '/login?error=UserNotFound';
+        try {
+          const dbUser = await userRepository.findByEmail(user.email);
+          
+          if (!dbUser) {
+            if (!IS_PRODUCTION) {
+              console.log('[Auth] Office 365 user not found in database:', user.email);
             }
-
-            if (!dbUser.isActive) {
-              console.log('Office 365 user is inactive:', user.email);
-              return '/login?error=UserInactive';
-            }
-
-            // 更新最后登录时间
-            await userRepository.updateLastLogin(user.email);
-            
-            return true;
-          } catch (error) {
-            console.error('Database error during Office 365 sign in:', error);
-            return '/login?error=DatabaseError';
+            return '/login?error=UserNotFound';
           }
+
+          if (!dbUser.isActive) {
+            if (!IS_PRODUCTION) {
+              console.log('[Auth] Office 365 user is inactive:', user.email);
+            }
+            return '/login?error=UserInactive';
+          }
+
+          // 更新最后登录时间
+          await userRepository.updateLastLogin(user.email);
+          
+          return true;
+        } catch (error) {
+          if (!IS_PRODUCTION) {
+            console.error('[Auth] Database error during Office 365 sign in:', error);
+          }
+          return '/login?error=DatabaseError';
         }
-        
-        // 未启用数据库时，允许所有Office 365用户登录
-        return true;
       }
 
       return true;
@@ -209,7 +188,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.email = user.email;
         
         // 从数据库获取用户角色
-        if (USE_DATABASE && user.email) {
+        if (user.email) {
           try {
             const dbUser = await userRepository.findByEmail(user.email);
             token.role = dbUser?.role || 'teacher';
@@ -224,16 +203,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       // Office 365登录时补充用户信息
       if (account?.provider === 'microsoft-entra-id' && token.email) {
         token.id = token.email;
-        if (USE_DATABASE) {
-          try {
-            const dbUser = await userRepository.findByEmail(token.email as string);
-            if (dbUser) {
-              token.role = dbUser.role;
-              token.name = dbUser.name || token.name;
-            }
-          } catch {
-            // 忽略错误，使用默认值
+        try {
+          const dbUser = await userRepository.findByEmail(token.email as string);
+          if (dbUser) {
+            token.role = dbUser.role;
+            token.name = dbUser.name || token.name;
           }
+        } catch {
+          // 忽略错误，使用默认值
         }
       }
       

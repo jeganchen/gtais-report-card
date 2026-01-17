@@ -27,9 +27,12 @@ export {
 export type {
   PSStudent,
   PSAttendance,
-  PSGrade,
-  PSSchoolYear,
-  PSContactInfo,
+  PSStandard,
+  PSStandardGrade,
+  PSTerm,
+  PSSchool,
+  PSCourse,
+  PSContact,
 } from './powerschool/types';
 
 // 服务
