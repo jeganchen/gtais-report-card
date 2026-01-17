@@ -74,7 +74,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const psClient = getPowerSchoolClient(config);
+    // 类型安全的配置对象（已通过上面的检查确保非 null）
+    const psConfig = {
+      endpoint: config.endpoint,
+      clientId: config.clientId,
+      clientSecret: config.clientSecret,
+      accessToken: config.accessToken,
+    };
+
+    const psClient = getPowerSchoolClient(psConfig);
 
     // 调用 PowerSchool 命名查询
     const psRecords = await psClient.executeNamedQuery<PSStudentStandardRecord>(
