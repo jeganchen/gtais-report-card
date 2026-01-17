@@ -158,7 +158,7 @@ export function StudentTable({ students, onViewReport }: StudentTableProps) {
                     {student.emailSent ? (
                       <Badge variant="success">Sent</Badge>
                     ) : (
-                      <Badge variant="secondary">Not Sent</Badge>
+                      <Badge variant="warning">Not Sent</Badge>
                     )}
                   </td>
 
