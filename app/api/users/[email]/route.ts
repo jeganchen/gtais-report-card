@@ -87,13 +87,15 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     }
 
     // 非admin不能修改角色和激活状态
-    const updateData: { name?: string; role?: string; password?: string; isActive?: boolean } = {};
+    const updateData: { name?: string; role?: 'admin' | 'teacher'; password?: string; isActive?: boolean } = {};
     
     if (name !== undefined) updateData.name = name;
     if (password) updateData.password = password;
     
     if (isAdmin) {
-      if (role !== undefined) updateData.role = role;
+      if (role !== undefined && (role === 'admin' || role === 'teacher')) {
+        updateData.role = role;
+      }
       if (isActive !== undefined) updateData.isActive = isActive;
     }
 
