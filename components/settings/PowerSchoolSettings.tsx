@@ -456,42 +456,55 @@ export function PowerSchoolSettings({ settings, onChange }: PowerSchoolSettingsP
     }
   };
 
-  // 执行完整同步
+  // 执行完整同步（只同步 persons, emails, person-email, students, student-contacts）
   const handleFullSync = async () => {
     setSyncStatus(prev => ({
       ...prev,
       full: { ...prev.full, status: 'syncing', message: undefined },
     }));
 
+    // 定义要同步的端点顺序（不包括 schools 和 terms）
+    const syncEndpoints = [
+      // { name: 'schools', endpoint: '/api/sync/schools' },  // 不同步 schools
+      // { name: 'terms', endpoint: '/api/sync/terms' },      // 不同步 terms
+      { name: 'persons', endpoint: '/api/sync/persons' },
+      { name: 'emails', endpoint: '/api/sync/email-addresses' },
+      { name: 'person-email', endpoint: '/api/sync/person-email-assocs' },
+      { name: 'students', endpoint: '/api/sync/students' },
+      { name: 'student-contacts', endpoint: '/api/sync/student-contacts' },
+    ];
+
+    let totalRecords = 0;
+    const results: string[] = [];
+
     try {
-      const response = await fetch('/api/sync', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'full' }),
-      });
+      for (const item of syncEndpoints) {
+        const response = await fetch(item.endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({}),
+        });
 
-      const data = await response.json();
+        const data = await response.json();
 
-      if (response.ok && data.success) {
-        setSyncStatus(prev => ({
-          ...prev,
-          full: {
-            ...prev.full,
-            status: 'success',
-            message: data.message,
-            recordCount: data.data?.recordCount || 0,
-          },
-        }));
-      } else {
-        setSyncStatus(prev => ({
-          ...prev,
-          full: {
-            ...prev.full,
-            status: 'error',
-            message: data.error || 'Sync failed',
-          },
-        }));
+        if (response.ok && data.success !== false) {
+          const count = data.data?.count || data.data?.recordCount || 0;
+          totalRecords += count;
+          results.push(`${item.name}: ${count}`);
+        } else {
+          results.push(`${item.name}: failed`);
+        }
       }
+
+      setSyncStatus(prev => ({
+        ...prev,
+        full: {
+          ...prev.full,
+          status: 'success',
+          message: results.join(', '),
+          recordCount: totalRecords,
+        },
+      }));
     } catch (error) {
       setSyncStatus(prev => ({
         ...prev,
@@ -703,7 +716,7 @@ export function PowerSchoolSettings({ settings, onChange }: PowerSchoolSettingsP
             variant="primary"
             size="sm"
             onClick={handleFullSync}
-            disabled={!canSyncWithSchool || syncStatus.full.status === 'syncing'}
+            disabled={!canSync || syncStatus.full.status === 'syncing'}
             leftIcon={syncStatus.full.status === 'syncing' 
               ? <Loader2 className="w-4 h-4 animate-spin" /> 
               : <Database className="w-4 h-4" />}
@@ -720,8 +733,8 @@ export function PowerSchoolSettings({ settings, onChange }: PowerSchoolSettingsP
           </div>
         )}
 
-        {/* 学校选择器 */}
-        {canSync && (
+        {/* 学校选择器 - 隐藏 */}
+        {/* {canSync && (
           <div className="p-4 bg-slate-50 rounded-lg mb-4">
             <label className="block text-sm font-medium text-slate-700 mb-2">
               Select School for Sync
@@ -756,7 +769,7 @@ export function PowerSchoolSettings({ settings, onChange }: PowerSchoolSettingsP
               </p>
             )}
           </div>
-        )}
+        )} */}
 
         {/* Full Sync 状态 */}
         {syncStatus.full.status !== 'idle' && syncStatus.full.status !== 'syncing' && (
@@ -779,8 +792,8 @@ export function PowerSchoolSettings({ settings, onChange }: PowerSchoolSettingsP
           </div>
         )}
 
-        {/* 单个同步项目（过滤掉隐藏的项目） */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        {/* 单个同步项目 - 隐藏 */}
+        {/* <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {SYNC_ITEMS.filter(item => !item.hidden).map((item) => {
             const status = syncStatus[item.key];
             const canSyncThis = item.requiresSchoolId ? canSyncWithSchool : canSync;
@@ -827,7 +840,7 @@ export function PowerSchoolSettings({ settings, onChange }: PowerSchoolSettingsP
               </div>
             );
           })}
-        </div>
+        </div> */}
       </div>
 
       {/* 报告状态管理 */}

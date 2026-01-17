@@ -216,20 +216,32 @@
         </columns>
         <sql>
             <![CDATA[
-            SELECT 
+             SELECT 
+                STUDENT_NUMBER,
+                FIRST_NAME,
+                LAST_NAME,
+                -- 统计 Absent (缺勤)
+                COUNT(CASE WHEN ATT_CODE = 'A' AND ABBREVIATION LIKE '%Q1%' THEN 1 END) AS ABSENT_Q1,
+                COUNT(CASE WHEN ATT_CODE = 'A' AND ABBREVIATION LIKE '%Q2%' THEN 1 END) AS ABSENT_Q2,
+                COUNT(CASE WHEN ATT_CODE = 'A' AND ABBREVIATION LIKE '%Q3%' THEN 1 END) AS ABSENT_Q3,
+                COUNT(CASE WHEN ATT_CODE = 'A' AND ABBREVIATION LIKE '%Q4%' THEN 1 END) AS ABSENT_Q4,
+                -- 统计 Tardy (迟到)
+                COUNT(CASE WHEN ATT_CODE = 'T' AND ABBREVIATION LIKE '%Q1%' THEN 1 END) AS TARDY_Q1,
+                COUNT(CASE WHEN ATT_CODE = 'T' AND ABBREVIATION LIKE '%Q2%' THEN 1 END) AS TARDY_Q2,
+                COUNT(CASE WHEN ATT_CODE = 'T' AND ABBREVIATION LIKE '%Q3%' THEN 1 END) AS TARDY_Q3,
+                COUNT(CASE WHEN ATT_CODE = 'T' AND ABBREVIATION LIKE '%Q4%' THEN 1 END) AS TARDY_Q4
+FROM (
+				SELECT 
                 stu.STUDENT_NUMBER,
                 stu.FIRST_NAME,
                 stu.LAST_NAME,
                 -- 统计 Absent (缺勤)
-                COUNT(CASE WHEN ac.ATT_CODE = 'A' AND t.ABBREVIATION LIKE '%Q1%' THEN 1 END) AS ABSENT_Q1,
-                COUNT(CASE WHEN ac.ATT_CODE = 'A' AND t.ABBREVIATION LIKE '%Q2%' THEN 1 END) AS ABSENT_Q2,
-                COUNT(CASE WHEN ac.ATT_CODE = 'A' AND t.ABBREVIATION LIKE '%Q3%' THEN 1 END) AS ABSENT_Q3,
-                COUNT(CASE WHEN ac.ATT_CODE = 'A' AND t.ABBREVIATION LIKE '%Q4%' THEN 1 END) AS ABSENT_Q4,
-                -- 统计 Tardy (迟到)
-                COUNT(CASE WHEN ac.ATT_CODE = 'T' AND t.ABBREVIATION LIKE '%Q1%' THEN 1 END) AS TARDY_Q1,
-                COUNT(CASE WHEN ac.ATT_CODE = 'T' AND t.ABBREVIATION LIKE '%Q2%' THEN 1 END) AS TARDY_Q2,
-                COUNT(CASE WHEN ac.ATT_CODE = 'T' AND t.ABBREVIATION LIKE '%Q3%' THEN 1 END) AS TARDY_Q3,
-                COUNT(CASE WHEN ac.ATT_CODE = 'T' AND t.ABBREVIATION LIKE '%Q4%' THEN 1 END) AS TARDY_Q4
+								ac.ATT_CODE,
+								t.ABBREVIATION ,
+								att.ATT_DATE ,
+								t.FIRSTDAY ,
+								t.LASTDAY,
+								stu.dcid
             FROM STUDENTS stu
             JOIN ATTENDANCE att ON stu.ID = att.STUDENTID
             JOIN ATTENDANCE_CODE ac ON att.ATTENDANCE_CODEID = ac.ID
@@ -237,10 +249,13 @@
                 AND att.ATT_DATE >= t.FIRSTDAY 
                 AND att.ATT_DATE <= t.LASTDAY
             WHERE att.YearID = :yearid
-            and stu.dcid = :sdcid
+            and stu.DCID = :sdcid
               AND t.ISYEARREC = 0
+              AND att.PERIODID = 0
               AND ac.ATT_CODE IN ('A', 'T')
-            GROUP BY stu.STUDENT_NUMBER, stu.FIRST_NAME, stu.LAST_NAME
+							) 
+		temp_table 
+	GROUP BY STUDENT_NUMBER, FIRST_NAME, LAST_NAME
             ]]>
         </sql>
     </query>
