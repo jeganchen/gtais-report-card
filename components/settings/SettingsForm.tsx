@@ -6,15 +6,17 @@ import { PowerSchoolSettings } from './PowerSchoolSettings';
 import { AzureADSettings } from './AzureADSettings';
 import { SMTPSettings } from './SMTPSettings';
 import { SignatureSettings } from './SignatureSettings';
+import { UserManagement } from './UserManagement';
 import { defaultSettings, type SystemSettings } from '@/types';
 
-type SettingsTab = 'powerschool' | 'azure' | 'smtp' | 'signature';
+type SettingsTab = 'powerschool' | 'azure' | 'smtp' | 'signature' | 'users';
 
 const tabs: { id: SettingsTab; label: string; description: string }[] = [
   { id: 'powerschool', label: 'PowerSchool', description: 'PowerSchool SIS integration settings' },
   { id: 'azure', label: 'Office 365', description: 'Azure AD authentication settings' },
   { id: 'smtp', label: 'Email (SMTP)', description: 'Email server configuration' },
   { id: 'signature', label: 'Signature', description: 'Principal signature settings' },
+  { id: 'users', label: 'Users', description: 'Manage system users and permissions' },
 ];
 
 export function SettingsForm() {
@@ -172,6 +174,11 @@ export function SettingsForm() {
             settings={settings.signature}
             onChange={(value) => updateSettings('signature', value)}
           />
+        )}
+
+        {/* 用户管理 */}
+        {activeTab === 'users' && (
+          <UserManagement />
         )}
       </div>
     </div>
