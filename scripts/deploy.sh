@@ -73,7 +73,7 @@ setup_logs() {
 # 安装依赖
 install_deps() {
     info "安装项目依赖..."
-    npm ci --production=false
+    npm ci --legacy-peer-deps || npm install --legacy-peer-deps
     info "依赖安装完成 ✓"
 }
 
