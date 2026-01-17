@@ -4,7 +4,7 @@
  * Azure AD 配置从数据库 Settings 表读取
  */
 
-import NextAuth from 'next-auth';
+import NextAuth, { type Provider } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import MicrosoftEntraID from 'next-auth/providers/microsoft-entra-id';
 import { z } from 'zod';
@@ -51,7 +51,7 @@ console.log('[Auth] Azure AD Config loaded:', {
 });
 
 // 构建 providers 数组
-const providers = [
+const providers: Provider[] = [
   // 用户名密码登录
   Credentials({
     name: 'Credentials',
