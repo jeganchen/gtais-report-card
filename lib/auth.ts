@@ -4,7 +4,7 @@
  * Azure AD 配置从数据库 Settings 表读取
  */
 
-import NextAuth, { type Provider } from 'next-auth';
+import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import MicrosoftEntraID from 'next-auth/providers/microsoft-entra-id';
 import { z } from 'zod';
@@ -50,8 +50,17 @@ console.log('[Auth] Azure AD Config loaded:', {
   tenantId: azureConfig.tenantId ? `${azureConfig.tenantId.substring(0, 8)}...` : 'not set',
 });
 
-// 构建 providers 数组
-const providers: Provider[] = [
+// 检查是否有完整的 Azure AD 配置
+const hasAzureConfig = !!(azureConfig.clientId && azureConfig.clientSecret && azureConfig.tenantId);
+
+if (hasAzureConfig) {
+  console.log('[Auth] MicrosoftEntraID provider will be added with tenant:', azureConfig.tenantId!.substring(0, 8) + '...');
+} else {
+  console.log('[Auth] MicrosoftEntraID provider NOT added - missing config');
+}
+
+// 构建 providers 数组 - 使用条件表达式避免类型推断问题
+const providers = [
   // 用户名密码登录
   Credentials({
     name: 'Credentials',
@@ -111,29 +120,25 @@ const providers: Provider[] = [
       }
     },
   }),
+  // 只有当 Azure AD 配置完整时才添加 MicrosoftEntraID provider
+  // 关键：必须提供 tenantId，否则会使用 /common 端点导致单租户应用报错
+  ...(hasAzureConfig
+    ? [
+        MicrosoftEntraID({
+          clientId: azureConfig.clientId!,
+          clientSecret: azureConfig.clientSecret!,
+          tenantId: azureConfig.tenantId!,
+          // 显式设置 issuer 以确保使用租户特定端点
+          issuer: `https://login.microsoftonline.com/${azureConfig.tenantId}/v2.0`,
+          authorization: {
+            params: {
+              scope: 'openid profile email User.Read',
+            },
+          },
+        }),
+      ]
+    : []),
 ];
-
-// 只有当 Azure AD 配置完整时才添加 MicrosoftEntraID provider
-// 关键：必须提供 tenantId，否则会使用 /common 端点导致单租户应用报错
-if (azureConfig.clientId && azureConfig.clientSecret && azureConfig.tenantId) {
-  console.log('[Auth] Adding MicrosoftEntraID provider with tenant:', azureConfig.tenantId.substring(0, 8) + '...');
-  providers.push(
-    MicrosoftEntraID({
-      clientId: azureConfig.clientId,
-      clientSecret: azureConfig.clientSecret,
-      tenantId: azureConfig.tenantId,
-      // 显式设置 issuer 以确保使用租户特定端点
-      issuer: `https://login.microsoftonline.com/${azureConfig.tenantId}/v2.0`,
-      authorization: {
-        params: {
-          scope: 'openid profile email User.Read',
-        },
-      },
-    })
-  );
-} else {
-  console.log('[Auth] MicrosoftEntraID provider NOT added - missing config');
-}
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers,
