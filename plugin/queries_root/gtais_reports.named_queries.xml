@@ -149,6 +149,8 @@
         <args>
             <arg name="sdcid" type="primitive" required="true" />
             <arg name="yearid" type="primitive" required="true" />
+            <arg name="startrow" type="primitive" required="true" />
+            <arg name="endrow" type="primitive" required="true" />
         </args>
         <columns>
             <column column="STUDENT_NUMBER">studentNumber</column>
@@ -166,31 +168,47 @@
         <sql>
             <![CDATA[
             SELECT 
-                s.STUDENT_NUMBER,
-                s.FIRST_NAME,
-                s.LAST_NAME,
-                c.COURSE_NAME,
-                sec.SECTION_NUMBER,
-                st.IDENTIFIER AS STANDARD_CODE,
-                st.NAME AS STANDARD_NAME,
-                sgs.STANDARDGRADE,
-                sgs.STORECODE,
-                sgs.YEARID,
-                st.STANDARDID
-            FROM STANDARDGRADESECTION sgs
-            JOIN STUDENTS s ON sgs.STUDENTSDCID = s.DCID
-            JOIN SECTIONS sec ON sgs.SECTIONSDCID = sec.DCID
-            JOIN COURSES c ON sec.COURSE_NUMBER = c.COURSE_NUMBER
-            JOIN STANDARD st ON sgs.STANDARDID = st.STANDARDID
-            WHERE s.DCID = :sdcid
-              AND s.ENROLL_STATUS = 0
-              AND sgs.STORECODE LIKE 'Q%'
-              AND sgs.YEARID = :yearid
-            ORDER BY 
-                sgs.YEARID DESC, 
-                c.COURSE_NAME ASC, 
-                sgs.STORECODE ASC, 
-                st.STANDARDID ASC
+                STUDENT_NUMBER,
+                FIRST_NAME,
+                LAST_NAME,
+                COURSE_NAME,
+                SECTION_NUMBER,
+                STANDARD_CODE,
+                STANDARD_NAME,
+                STANDARDGRADE,
+                STORECODE,
+                YEARID,
+                STANDARDID
+            FROM (
+                SELECT 
+                    s.STUDENT_NUMBER,
+                    s.FIRST_NAME,
+                    s.LAST_NAME,
+                    c.COURSE_NAME,
+                    sec.SECTION_NUMBER,
+                    st.IDENTIFIER AS STANDARD_CODE,
+                    st.NAME AS STANDARD_NAME,
+                    sgs.STANDARDGRADE,
+                    sgs.STORECODE,
+                    sgs.YEARID,
+                    st.STANDARDID,
+                    ROW_NUMBER() OVER (
+                        ORDER BY 
+                            sgs.YEARID DESC, 
+                            c.COURSE_NAME ASC, 
+                            sgs.STORECODE ASC, 
+                            st.STANDARDID ASC
+                    ) AS row_num
+                FROM STANDARDGRADESECTION sgs
+                JOIN STUDENTS s ON sgs.STUDENTSDCID = s.DCID
+                JOIN SECTIONS sec ON sgs.SECTIONSDCID = sec.DCID
+                JOIN COURSES c ON sec.COURSE_NUMBER = c.COURSE_NUMBER
+                JOIN STANDARD st ON sgs.STANDARDID = st.STANDARDID
+                WHERE s.DCID = :sdcid
+                  AND s.ENROLL_STATUS = 0
+                  AND sgs.STORECODE LIKE 'Q%'
+                  AND sgs.YEARID = :yearid
+            ) numbered_rows WHERE row_num BETWEEN :startrow AND :endrow
             ]]>
         </sql>
     </query>

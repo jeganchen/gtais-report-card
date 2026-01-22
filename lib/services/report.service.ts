@@ -56,11 +56,15 @@ function toScoreLevel(grade: string | null): ScoreLevel {
  * @param studentDcid 学生 DCID
  * @param yearId 学年 ID
  * @param baseUrl 基础 URL（服务端调用时需要）
+ * @param startrow 起始行（默认1）
+ * @param endrow 结束行（默认100）
  */
 export async function fetchStudentStandardsReport(
   studentDcid: number,
   yearId: number,
-  baseUrl?: string
+  baseUrl?: string,
+  startrow: number = 1,
+  endrow: number = 100
 ): Promise<StudentGrades | null> {
   try {
     const url = baseUrl 
@@ -75,6 +79,8 @@ export async function fetchStudentStandardsReport(
       body: JSON.stringify({
         sdcid: studentDcid,
         yearid: yearId,
+        startrow,
+        endrow,
       }),
     });
 
@@ -156,13 +162,20 @@ function transformToStudentGrades(
 /**
  * 直接从 PowerSchool 客户端获取学生标准成绩（服务端使用）
  * 不经过 API 路由
+ * @param studentDcid 学生 DCID
+ * @param yearId 学年 ID
+ * @param psClient PowerSchool 客户端
+ * @param startrow 起始行（默认1）
+ * @param endrow 结束行（默认100）
  */
 export async function fetchStudentStandardsReportDirect(
   studentDcid: number,
   yearId: number,
   psClient: {
     executeNamedQuery: <T>(queryName: string, params?: Record<string, string | number>) => Promise<T[]>;
-  }
+  },
+  startrow: number = 1,
+  endrow: number = 100
 ): Promise<StudentGrades | null> {
   try {
     interface PSStudentStandardRecord {
@@ -187,7 +200,12 @@ export async function fetchStudentStandardsReportDirect(
 
     const psRecords = await psClient.executeNamedQuery<PSStudentStandardRecord>(
       'org.infocare.sync.student_standards_report',
-      { sdcid: String(studentDcid), yearid: String(yearId) }
+      { 
+        sdcid: String(studentDcid), 
+        yearid: String(yearId),
+        startrow: String(startrow),
+        endrow: String(endrow)
+      }
     );
 
     if (!psRecords || psRecords.length === 0) {

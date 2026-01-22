@@ -49,7 +49,9 @@ export interface StudentStandardReport {
  * Request body:
  * {
  *   "sdcid": 52,      // Student DCID
- *   "yearid": 35      // Year ID
+ *   "yearid": 35,     // Year ID
+ *   "startrow": 1,    // 起始行（可选，默认1）
+ *   "endrow": 100     // 结束行（可选，默认100）
  * }
  */
 export async function POST(request: NextRequest) {
@@ -57,7 +59,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { sdcid, yearid } = body;
+    const { sdcid, yearid, startrow = 1, endrow = 100 } = body;
 
     if (!sdcid || !yearid) {
       return NextResponse.json(
@@ -84,10 +86,15 @@ export async function POST(request: NextRequest) {
 
     const psClient = getPowerSchoolClient(psConfig);
 
-    // 调用 PowerSchool 命名查询
+    // 调用 PowerSchool 命名查询（带分页参数）
     const psRecords = await psClient.executeNamedQuery<PSStudentStandardRecord>(
       'org.infocare.sync.student_standards_report',
-      { sdcid: String(sdcid), yearid: String(yearid) }
+      { 
+        sdcid: String(sdcid), 
+        yearid: String(yearid),
+        startrow: String(startrow),
+        endrow: String(endrow)
+      }
     );
 
     // 转换数据格式
@@ -181,12 +188,14 @@ export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const sdcid = searchParams.get('sdcid');
   const yearid = searchParams.get('yearid');
+  const startrow = searchParams.get('startrow') || '1';
+  const endrow = searchParams.get('endrow') || '100';
 
   if (!sdcid || !yearid) {
     return NextResponse.json(
       { 
         error: 'Missing required parameters',
-        usage: '/api/sync/student-standards-report?sdcid=52&yearid=35'
+        usage: '/api/sync/student-standards-report?sdcid=52&yearid=35&startrow=1&endrow=100'
       },
       { status: 400 }
     );
@@ -195,7 +204,12 @@ export async function GET(request: NextRequest) {
   // 重用 POST 逻辑
   const mockRequest = new NextRequest(request.url, {
     method: 'POST',
-    body: JSON.stringify({ sdcid: parseInt(sdcid), yearid: parseInt(yearid) }),
+    body: JSON.stringify({ 
+      sdcid: parseInt(sdcid), 
+      yearid: parseInt(yearid),
+      startrow: parseInt(startrow),
+      endrow: parseInt(endrow)
+    }),
   });
 
   return POST(mockRequest);
