@@ -53,51 +53,104 @@ function toScoreLevel(grade: string | null): ScoreLevel {
 
 /**
  * 从 PowerSchool API 获取学生标准成绩
+ * 自动循环分页获取所有记录
  * @param studentDcid 学生 DCID
  * @param yearId 学年 ID
  * @param baseUrl 基础 URL（服务端调用时需要）
- * @param startrow 起始行（默认1）
- * @param endrow 结束行（默认100）
  */
 export async function fetchStudentStandardsReport(
   studentDcid: number,
   yearId: number,
-  baseUrl?: string,
-  startrow: number = 1,
-  endrow: number = 100
+  baseUrl?: string
 ): Promise<StudentGrades | null> {
   try {
-    const url = baseUrl 
+    const apiUrl = baseUrl 
       ? `${baseUrl}/api/sync/student-standards-report`
       : '/api/sync/student-standards-report';
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        sdcid: studentDcid,
-        yearid: yearId,
-        startrow,
-        endrow,
-      }),
-    });
+    // 循环分页获取所有记录
+    const allCourses: ApiCourse[] = [];
+    let startrow = 1;
+    let endrow = STANDARDS_PAGE_SIZE;
+    let pageCount = 0;
+    let studentNumber = '';
+    let firstName = '';
+    let lastName = '';
 
-    if (!response.ok) {
-      console.error('Failed to fetch student standards report:', response.status);
+    console.log(`[StudentStandardsReport] Starting paginated API fetch for student ${studentDcid}`);
+
+    while (true) {
+      pageCount++;
+      console.log(`[StudentStandardsReport] Fetching page ${pageCount}: rows ${startrow}-${endrow}`);
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          sdcid: studentDcid,
+          yearid: yearId,
+          startrow,
+          endrow,
+        }),
+      });
+
+      if (!response.ok) {
+        console.error('Failed to fetch student standards report:', response.status);
+        return null;
+      }
+
+      const result: ApiStudentStandardsResponse = await response.json();
+
+      if (!result.success || !result.data) {
+        console.error('API returned error:', result);
+        break;
+      }
+
+      const recordCount = result.data.totalRecords || 0;
+      console.log(`[StudentStandardsReport] Page ${pageCount} returned ${recordCount} records`);
+
+      // 保存学生信息
+      if (pageCount === 1) {
+        studentNumber = result.data.studentNumber;
+        firstName = result.data.firstName;
+        lastName = result.data.lastName;
+      }
+
+      // 合并课程数据
+      if (result.data.courses && result.data.courses.length > 0) {
+        allCourses.push(...result.data.courses);
+      }
+
+      if (recordCount < STANDARDS_PAGE_SIZE) {
+        // 返回数据少于页大小，说明已是最后一页
+        break;
+      }
+
+      // 准备下一页
+      startrow += STANDARDS_PAGE_SIZE;
+      endrow += STANDARDS_PAGE_SIZE;
+    }
+
+    console.log(`[StudentStandardsReport] Total fetched: ${allCourses.length} courses in ${pageCount} pages`);
+
+    if (allCourses.length === 0) {
       return null;
     }
 
-    const result: ApiStudentStandardsResponse = await response.json();
+    // 合并所有课程数据并转换
+    const mergedData: ApiStudentStandardsResponse['data'] = {
+      studentNumber,
+      firstName,
+      lastName,
+      yearId,
+      totalRecords: allCourses.reduce((sum, c) => sum + c.standards.length, 0),
+      courses: allCourses,
+      rawRecords: [],
+    };
 
-    if (!result.success || !result.data) {
-      console.error('API returned error:', result);
-      return null;
-    }
-
-    // 转换为 StudentGrades 格式
-    return transformToStudentGrades(result.data, yearId);
+    return transformToStudentGrades(mergedData, yearId);
   } catch (error) {
     console.error('Error fetching student standards report:', error);
     return null;
@@ -159,23 +212,22 @@ function transformToStudentGrades(
   };
 }
 
+// 分页配置
+const STANDARDS_PAGE_SIZE = 100;
+
 /**
  * 直接从 PowerSchool 客户端获取学生标准成绩（服务端使用）
- * 不经过 API 路由
+ * 不经过 API 路由，自动循环分页获取所有记录
  * @param studentDcid 学生 DCID
  * @param yearId 学年 ID
  * @param psClient PowerSchool 客户端
- * @param startrow 起始行（默认1）
- * @param endrow 结束行（默认100）
  */
 export async function fetchStudentStandardsReportDirect(
   studentDcid: number,
   yearId: number,
   psClient: {
     executeNamedQuery: <T>(queryName: string, params?: Record<string, string | number>) => Promise<T[]>;
-  },
-  startrow: number = 1,
-  endrow: number = 100
+  }
 ): Promise<StudentGrades | null> {
   try {
     interface PSStudentStandardRecord {
@@ -198,20 +250,56 @@ export async function fetchStudentStandardsReportDirect(
       };
     }
 
-    const psRecords = await psClient.executeNamedQuery<PSStudentStandardRecord>(
-      'org.infocare.sync.student_standards_report',
-      { 
-        sdcid: String(studentDcid), 
-        yearid: String(yearId),
-        startrow: String(startrow),
-        endrow: String(endrow)
-      }
-    );
+    // 循环分页获取所有记录
+    const allRecords: PSStudentStandardRecord[] = [];
+    let startrow = 1;
+    let endrow = STANDARDS_PAGE_SIZE;
+    let pageCount = 0;
 
-    if (!psRecords || psRecords.length === 0) {
+    console.log(`[StudentStandardsReport] Starting paginated fetch for student ${studentDcid}, yearId ${yearId}`);
+
+    while (true) {
+      pageCount++;
+      console.log(`[StudentStandardsReport] Fetching page ${pageCount}: rows ${startrow}-${endrow}`);
+
+      const psRecords = await psClient.executeNamedQuery<PSStudentStandardRecord>(
+        'org.infocare.sync.student_standards_report',
+        { 
+          sdcid: String(studentDcid), 
+          yearid: String(yearId),
+          startrow: String(startrow),
+          endrow: String(endrow)
+        }
+      );
+
+      console.log(`[StudentStandardsReport] Page ${pageCount} returned ${psRecords?.length || 0} records`);
+
+      if (!psRecords || psRecords.length === 0) {
+        // 没有更多数据，退出循环
+        break;
+      }
+
+      allRecords.push(...psRecords);
+
+      if (psRecords.length < STANDARDS_PAGE_SIZE) {
+        // 返回数据少于页大小，说明已是最后一页
+        break;
+      }
+
+      // 准备下一页
+      startrow += STANDARDS_PAGE_SIZE;
+      endrow += STANDARDS_PAGE_SIZE;
+    }
+
+    console.log(`[StudentStandardsReport] Total fetched: ${allRecords.length} records in ${pageCount} pages`);
+
+    if (allRecords.length === 0) {
       console.log('No standards report data found for student:', studentDcid);
       return null;
     }
+
+    // 使用所有记录进行处理
+    const psRecords = allRecords;
 
     // 按课程分组
     const courseMap = new Map<string, {
