@@ -24,6 +24,7 @@ export interface StudentListResult {
   page: number;
   pageSize: number;
   totalPages: number;
+  pdfGeneratedCount: number;  // 符合当前过滤条件的所有学生中已生成 PDF 的数量
 }
 
 export class StudentService {
@@ -71,6 +72,7 @@ export class StudentService {
       page: result.page,
       pageSize: result.pageSize,
       totalPages: result.totalPages,
+      pdfGeneratedCount: result.pdfGeneratedCount,
     };
   }
 

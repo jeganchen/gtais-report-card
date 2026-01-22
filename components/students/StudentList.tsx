@@ -24,6 +24,7 @@ export function StudentList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+  const [pdfGeneratedCount, setPdfGeneratedCount] = useState(0);
   const { selectedIds } = useSelectionStore();
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -98,6 +99,7 @@ export function StudentList() {
         setStudents([]);
         setTotalCount(0);
         setTotalPages(1);
+        setPdfGeneratedCount(0);
         return;
       }
 
@@ -133,12 +135,14 @@ export function StudentList() {
         setStudents(data.students || []);
         setTotalCount(data.total || 0);
         setTotalPages(data.totalPages || 1);
+        setPdfGeneratedCount(data.pdfGeneratedCount || 0);
       } catch (err) {
         console.error('Failed to fetch students:', err);
         setError(err instanceof Error ? err.message : 'Failed to load students');
         setStudents([]);
         setTotalCount(0);
         setTotalPages(1);
+        setPdfGeneratedCount(0);
       } finally {
         setIsLoading(false);
       }
@@ -156,11 +160,14 @@ export function StudentList() {
     return Array.from(gradeSet).sort((a, b) => a - b);
   }, [students]);
 
-  // 统计信息 - 使用 totalCount 显示总数
+  // 统计信息 - 使用后端返回的统计数据（符合当前过滤条件的所有学生）
   const stats = useMemo(() => {
-    const pdfGenerated = filteredStudents.filter((s) => s.pdfGenerated).length;
-    return { total: totalCount, pdfGenerated, pending: totalCount - pdfGenerated };
-  }, [filteredStudents, totalCount]);
+    return { 
+      total: totalCount, 
+      pdfGenerated: pdfGeneratedCount, 
+      pending: totalCount - pdfGeneratedCount 
+    };
+  }, [totalCount, pdfGeneratedCount]);
 
   // 分页处理函数
   const handlePreviousPage = () => {

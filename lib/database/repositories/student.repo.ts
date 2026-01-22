@@ -202,7 +202,7 @@ export class StudentRepository {
     const pageSize = pagination?.pageSize || 50;
     const skip = (page - 1) * pageSize;
 
-    const [students, total] = await Promise.all([
+    const [students, total, pdfGeneratedCount] = await Promise.all([
       prisma.student.findMany({
         where,
         skip,
@@ -231,6 +231,8 @@ export class StudentRepository {
         },
       }),
       prisma.student.count({ where }),
+      // 统计符合当前过滤条件的所有学生中已生成 PDF 的数量
+      prisma.student.count({ where: { ...where, pdfGenerated: true } }),
     ]);
 
     return {
@@ -239,6 +241,7 @@ export class StudentRepository {
       page,
       pageSize,
       totalPages: Math.ceil(total / pageSize),
+      pdfGeneratedCount,
     };
   }
 
